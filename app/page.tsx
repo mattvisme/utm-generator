@@ -1,101 +1,255 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
+import { useState } from 'react'
+import Header from '@/components/Header'
+import InputForm from '@/components/InputForm'
+import UTMResult from '@/components/UTMResult'
+import SuccessState from '@/components/SuccessState'
+import { AppState, FormData, GenerateResponse } from '@/types/utm'
+
+export default function HomePage() {
+  const [appState, setAppState] = useState<AppState>('input')
+  const [formData, setFormData] = useState<(FormData & { cleanUrl: string }) | null>(null)
+  const [generateResult, setGenerateResult] = useState<GenerateResponse | null>(null)
+  const [generateError, setGenerateError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [approving, setApproving] = useState(false)
+  const [saveError, setSaveError] = useState('')
+  const [notionUrl, setNotionUrl] = useState('')
+
+  const handleGenerate = async (data: FormData & { cleanUrl: string }) => {
+    setFormData(data)
+    setGenerateError('')
+    setLoading(true)
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url: data.cleanUrl,
+          channel: data.channel,
+          description: data.description,
+          vc_parameter: data.vc_parameter || undefined,
+        }),
+      })
+      const json = await res.json()
+      if (!res.ok) {
+        setGenerateError(json.error || 'Something went wrong generating UTMs. Please try again.')
+        return
+      }
+      setGenerateResult(json)
+      setAppState('result')
+    } catch {
+      setGenerateError('Something went wrong generating UTMs. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleApprove = async () => {
+    if (!generateResult || !formData) return
+    setApproving(true)
+    setSaveError('')
+    try {
+      const { suggestion, final_url } = generateResult
+      const res = await fetch('/api/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url_original: formData.cleanUrl,
+          url_with_utm: final_url,
+          description: formData.description,
+          channel: formData.channel,
+          utm_source: suggestion.utm_source,
+          utm_medium: suggestion.utm_medium,
+          utm_campaign: suggestion.utm_campaign,
+          utm_content: suggestion.utm_content,
+          utm_term: suggestion.utm_term,
+          vc_parameter: suggestion.vc_parameter,
+          ga4_setup_required: suggestion.ga4_setup_required,
+          ga4_setup_reason: suggestion.ga4_setup_reason,
+          reasoning: suggestion.reasoning,
+        }),
+      })
+      const json = await res.json()
+      if (!res.ok) {
+        setSaveError(json.error || 'Could not save to Notion. Copy your URL now.')
+        return
+      }
+      setNotionUrl(json.notion_url)
+      setAppState('success')
+    } catch {
+      setSaveError('Could not save to Notion. Copy your URL now.')
+    } finally {
+      setApproving(false)
+    }
+  }
+
+  const handleReject = () => {
+    setGenerateResult(null)
+    setGenerateError('')
+    // Preserve URL and description, clear channel
+    if (formData) {
+      setFormData({ ...formData, channel: '' })
+    }
+    setAppState('input')
+  }
+
+  const handleReset = () => {
+    setFormData(null)
+    setGenerateResult(null)
+    setGenerateError('')
+    setSaveError('')
+    setNotionUrl('')
+    setAppState('input')
+  }
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
+      <Header />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      <main style={{ flex: 1, padding: '2rem 1.5rem' }}>
+        <div style={{ maxWidth: '720px', margin: '0 auto' }}>
+
+          {/* State: Input */}
+          {appState === 'input' && (
+            <div style={{ animation: 'fadeIn 0.2s ease' }}>
+              <div style={{ marginBottom: '1.75rem' }}>
+                <h2
+                  style={{
+                    fontFamily: 'Montserrat, sans-serif',
+                    fontWeight: 700,
+                    fontSize: '1.25rem',
+                    color: 'var(--text)',
+                    marginBottom: '0.375rem',
+                  }}
+                >
+                  Generate a UTM link
+                </h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.9375rem', fontFamily: 'Lato, sans-serif' }}>
+                  Describe your link and Claude will apply Visme&apos;s UTM framework automatically.
+                </p>
+              </div>
+
+              <div className="card" style={{ padding: '1.75rem 1.5rem' }}>
+                <InputForm
+                  onSubmit={handleGenerate}
+                  loading={loading}
+                  initialData={
+                    formData
+                      ? { url: formData.url, description: formData.description, channel: formData.channel, vc_parameter: formData.vc_parameter }
+                      : undefined
+                  }
+                />
+                {generateError && (
+                  <p
+                    style={{
+                      color: '#DC2626',
+                      fontSize: '0.875rem',
+                      marginTop: '1rem',
+                      fontFamily: 'Lato, sans-serif',
+                      background: '#FEF2F2',
+                      border: '1px solid #FECACA',
+                      borderRadius: 'var(--radius-sm)',
+                      padding: '0.75rem 1rem',
+                    }}
+                  >
+                    {generateError}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* State: Result */}
+          {appState === 'result' && generateResult && formData && (
+            <div style={{ animation: 'fadeIn 0.2s ease' }}>
+              <div style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <button
+                  onClick={handleReject}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--text-muted)',
+                    cursor: 'pointer',
+                    fontSize: '0.875rem',
+                    fontFamily: 'Lato, sans-serif',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.25rem',
+                    padding: 0,
+                  }}
+                >
+                  ← Back
+                </button>
+                <span style={{ color: 'var(--border)', fontSize: '1rem' }}>|</span>
+                <h2
+                  style={{
+                    fontFamily: 'Montserrat, sans-serif',
+                    fontWeight: 700,
+                    fontSize: '1.125rem',
+                    color: 'var(--text)',
+                  }}
+                >
+                  UTM Suggestion
+                </h2>
+              </div>
+
+              <UTMResult
+                result={generateResult}
+                formData={formData}
+                onApprove={handleApprove}
+                onReject={handleReject}
+                approving={approving}
+              />
+
+              {saveError && (
+                <div
+                  style={{
+                    marginTop: '1rem',
+                    background: '#FEF2F2',
+                    border: '1px solid #FECACA',
+                    borderRadius: 'var(--radius-sm)',
+                    padding: '0.875rem 1rem',
+                    color: '#DC2626',
+                    fontFamily: 'Lato, sans-serif',
+                    fontSize: '0.875rem',
+                  }}
+                >
+                  <strong>Save failed:</strong> {saveError}
+                  <div style={{ marginTop: '0.5rem' }}>
+                    <strong>Your URL (copy it now):</strong>
+                    <br />
+                    <code style={{ fontSize: '0.8125rem', wordBreak: 'break-all' }}>
+                      {generateResult.final_url}
+                    </code>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* State: Success */}
+          {appState === 'success' && generateResult && (
+            <div style={{ animation: 'fadeIn 0.2s ease' }}>
+              <SuccessState
+                result={generateResult}
+                notionUrl={notionUrl}
+                ga4SetupRequired={generateResult.suggestion.ga4_setup_required}
+                onReset={handleReset}
+              />
+            </div>
+          )}
+
         </div>
       </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+      <style jsx global>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(6px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
-  );
+  )
 }

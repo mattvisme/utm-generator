@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Visme UTM Generator
 
-## Getting Started
+Internal tool for generating standardized UTM-tagged URLs across all Visme teams.
 
-First, run the development server:
+## Setup
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. Clone this repo
+2. `npm install`
+3. Copy `.env.local.example` to `.env.local` and fill in values
+4. `npm run dev`
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Environment Variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Variable | Description |
+|---|---|
+| AUTH_PASSWORD | Shared password to access the tool |
+| JWT_SECRET | Random string for signing session tokens (min 32 chars) |
+| ANTHROPIC_API_KEY | Claude API key from console.anthropic.com |
+| NOTION_API_KEY | Notion integration secret |
+| NOTION_DATABASE_ID | ID of the UTM Links Notion database |
+| SLACK_WEBHOOK_URL | Incoming webhook URL for #marketing-analytics |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Notion Database Setup
 
-## Learn More
+Create a Notion database named **"UTM Links — Visme"** with these properties:
 
-To learn more about Next.js, take a look at the following resources:
+| Property | Type |
+|---|---|
+| Name | Title |
+| URL (Original) | URL |
+| URL (With UTMs) | URL |
+| Description | Text |
+| Channel | Select |
+| utm_source | Text |
+| utm_medium | Text |
+| utm_campaign | Text |
+| utm_content | Text |
+| utm_term | Text |
+| vc_parameter | Text |
+| GA4 Setup Required | Checkbox |
+| GA4 Setup Notes | Text |
+| Created | Date |
+| Created By | Text |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Then share the database with your Notion integration and copy the database ID from the URL.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deployment
 
-## Deploy on Vercel
+Push to `main` branch → auto-deploys to Vercel.
+All env vars must be set in Vercel project settings.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Adding new UTM values
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+New `utm_source` or `utm_medium` values must be approved by Marketing Ops before being added to the Claude system prompt in `/lib/claude.ts`.
