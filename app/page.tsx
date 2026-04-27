@@ -30,6 +30,11 @@ export default function HomePage() {
           channel: data.channel,
           description: data.description,
           vc_parameter: data.vc_parameter || undefined,
+          campaign_name: data.campaign_name || undefined,
+          campaign_date: data.campaign_month
+            ? `${['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'][parseInt(data.campaign_month) - 1]}_${data.campaign_year}`
+            : undefined,
+          cohort: data.cohort || undefined,
         }),
       })
       const json = await res.json()

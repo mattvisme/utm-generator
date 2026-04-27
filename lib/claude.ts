@@ -69,7 +69,10 @@ export async function generateUTMs(
   url: string,
   channel: string,
   description: string,
-  vcParameter?: string
+  vcParameter?: string,
+  campaignName?: string,
+  campaignDate?: string,
+  cohort?: string
 ): Promise<UTMSuggestion> {
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -77,6 +80,15 @@ export async function generateUTMs(
     `Channel: ${channel}`,
     `URL: ${url}`,
     `Description: ${description}`,
+    campaignName
+      ? `Campaign name (use exactly this, append date suffix if provided): ${campaignName}`
+      : null,
+    campaignDate
+      ? `Campaign date suffix to append to campaign name: _${campaignDate}`
+      : null,
+    cohort
+      ? `Target audience cohort: ${cohort} accounts (managed = enterprise/CSM accounts, unmanaged = self-serve accounts). Incorporate into utm_content if relevant.`
+      : null,
     vcParameter ? `Existing vc= value to preserve: ${vcParameter}` : null,
   ]
     .filter(Boolean)

@@ -18,6 +18,9 @@ export interface GenerateRequest {
   channel: string
   description: string
   vc_parameter?: string
+  campaign_name?: string
+  campaign_date?: string   // formatted as "apr_2026"
+  cohort?: 'managed' | 'unmanaged'
 }
 
 export interface GenerateResponse {
@@ -59,6 +62,10 @@ export interface FormData {
   channel: string
   description: string
   vc_parameter: string
+  campaign_name: string
+  campaign_month: string  // "04"
+  campaign_year: string   // "2026"
+  cohort: string          // "managed" | "unmanaged" | ""
 }
 
 export const CHANNELS = [
@@ -79,4 +86,25 @@ export type Channel = (typeof CHANNELS)[number]
 export const PPC_CHANNELS: Channel[] = [
   'Paid Search (Google Ads)',
   'Paid Search (Bing Ads)',
+]
+
+// Channels where managed/unmanaged cohort targeting is relevant
+export const COHORT_CHANNELS: Channel[] = [
+  'Email / Newsletter',
+  'Product Feature',
+]
+
+export const MONTHS = [
+  { value: '01', label: 'Jan' },
+  { value: '02', label: 'Feb' },
+  { value: '03', label: 'Mar' },
+  { value: '04', label: 'Apr' },
+  { value: '05', label: 'May' },
+  { value: '06', label: 'Jun' },
+  { value: '07', label: 'Jul' },
+  { value: '08', label: 'Aug' },
+  { value: '09', label: 'Sep' },
+  { value: '10', label: 'Oct' },
+  { value: '11', label: 'Nov' },
+  { value: '12', label: 'Dec' },
 ]
