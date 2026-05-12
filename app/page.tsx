@@ -15,7 +15,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(false)
   const [approving, setApproving] = useState(false)
   const [saveError, setSaveError] = useState('')
-  const [notionUrl, setNotionUrl] = useState('')
+  const [, setNotionUrl] = useState('')
 
   const handleGenerate = async (data: FormData & { cleanUrl: string }) => {
     setFormData(data)
@@ -240,8 +240,6 @@ export default function HomePage() {
             <div style={{ animation: 'fadeIn 0.2s ease' }}>
               <SuccessState
                 result={generateResult}
-                notionUrl={notionUrl}
-                ga4SetupRequired={generateResult.suggestion.ga4_setup_required}
                 onReset={handleReset}
               />
             </div>

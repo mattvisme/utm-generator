@@ -3,14 +3,14 @@
 import { useState } from 'react'
 import { GenerateResponse } from '@/types/utm'
 
+const NOTION_DB_URL = 'https://www.notion.so/visme/34ad7facd2ae80469d62cb427f8e072c?v=34ad7facd2ae80e9a8f4000c69528090'
+
 interface Props {
   result: GenerateResponse
-  notionUrl: string
-  ga4SetupRequired: boolean
   onReset: () => void
 }
 
-export default function SuccessState({ result, notionUrl, ga4SetupRequired, onReset }: Props) {
+export default function SuccessState({ result, onReset }: Props) {
   const [copied, setCopied] = useState(false)
   const { suggestion, final_url } = result
 
@@ -57,12 +57,6 @@ export default function SuccessState({ result, notionUrl, ga4SetupRequired, onRe
       >
         UTM link saved
       </h2>
-
-      {ga4SetupRequired && (
-        <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', fontFamily: 'Lato, sans-serif', marginBottom: '1rem' }}>
-          Matt has been notified in #marketing-analytics to complete the GA4 setup.
-        </p>
-      )}
 
       {/* Final URL */}
       <div style={{ margin: '1.25rem 0', textAlign: 'left' }}>
@@ -126,7 +120,7 @@ export default function SuccessState({ result, notionUrl, ga4SetupRequired, onRe
           Generate Another
         </button>
         <a
-          href={notionUrl}
+          href={NOTION_DB_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="btn-primary"
