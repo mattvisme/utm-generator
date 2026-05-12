@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { generateUTMs } from '@/lib/claude'
 import { findSimilarRecord } from '@/lib/notion'
 import { isVismeUrl, stripUtmParams, buildFinalUrl, truncateCampaign } from '@/lib/utm-utils'
-import { GenerateRequest } from '@/types/utm'
+import { GenerateRequest, APPROVED_MEDIUMS } from '@/types/utm'
 
 export async function POST(req: NextRequest) {
   try {
@@ -29,6 +29,22 @@ export async function POST(req: NextRequest) {
       cohort,
       ab_variant
     )
+
+    // Validate medium is from approved list
+    if (!(APPROVED_MEDIUMS as readonly string[]).includes(suggestion.utm_medium)) {
+      console.error(`[generate] Invalid medium returned by LLM: "${suggestion.utm_medium}"`)
+      return NextResponse.json(
+        { error: `Generated an invalid utm_medium value: "${suggestion.utm_medium}". Please try again.` },
+        { status: 422 }
+      )
+    }
+
+    // Normalise campaign name server-side (lowercase, underscores only)
+    suggestion.utm_campaign = suggestion.utm_campaign
+      .toLowerCase()
+      .replace(/[^a-z0-9_]/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^_|_$/g, '')
 
     const { value: campaign, truncated } = truncateCampaign(suggestion.utm_campaign)
     if (truncated) {

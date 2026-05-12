@@ -98,6 +98,20 @@ export const COHORT_CHANNELS: Channel[] = [
   'Product Feature',
 ]
 
+export const APPROVED_MEDIUMS = [
+  'cpc',
+  'paid_social',
+  'display',
+  'email',
+  'social',
+  'referral',
+  'affiliate',
+  'badge',
+  'internal',
+] as const
+
+export type ApprovedMedium = (typeof APPROVED_MEDIUMS)[number]
+
 export const MONTHS = [
   { value: '01', label: 'Jan' },
   { value: '02', label: 'Feb' },

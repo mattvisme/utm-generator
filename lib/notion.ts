@@ -48,6 +48,9 @@ export async function saveUTMRecord(data: SaveRequest): Promise<string> {
       'GA4 Setup Notes': {
         rich_text: [{ text: { content: data.ga4_setup_reason || '' } }],
       },
+      Reasoning: {
+        rich_text: [{ text: { content: data.reasoning || '' } }],
+      },
       Created: { date: { start: new Date().toISOString() } },
       'Created By': {
         rich_text: [{ text: { content: 'UTM Generator' } }],
@@ -73,6 +76,10 @@ export async function findSimilarRecord(
       database_id: dbId,
       filter: {
         and: [
+          {
+            property: 'URL (Original)',
+            url: { equals: baseUrl },
+          },
           {
             property: 'utm_source',
             rich_text: { equals: utmSource },
