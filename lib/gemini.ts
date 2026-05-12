@@ -77,15 +77,13 @@ export async function generateUTMs(
   cohort?: string,
   abVariant?: string
 ): Promise<UTMSuggestion> {
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
+  const apiKey = process.env.GEMINI_API_KEY
+  if (!apiKey) throw new Error('GEMINI_API_KEY is not configured')
+
+  const genAI = new GoogleGenerativeAI(apiKey)
   const model = genAI.getGenerativeModel({
     model: 'gemini-1.5-flash',
     systemInstruction: SYSTEM_PROMPT,
-    generationConfig: {
-      temperature: 0,
-      maxOutputTokens: 500,
-      responseMimeType: 'application/json',
-    },
   })
 
   const userMessage = [
@@ -110,7 +108,14 @@ export async function generateUTMs(
     .join('\n')
 
   const callGemini = async (): Promise<string> => {
-    const result = await model.generateContent(userMessage)
+    const result = await model.generateContent({
+      contents: [{ role: 'user', parts: [{ text: userMessage }] }],
+      generationConfig: {
+        temperature: 0,
+        maxOutputTokens: 500,
+        responseMimeType: 'application/json',
+      },
+    })
     return result.response.text()
   }
 
@@ -136,7 +141,7 @@ export async function generateUTMs(
   try {
     suggestion = parseJson(raw)
   } catch {
-    console.warn('[gemini] First parse failed, retrying...')
+    console.warn('[gemini] First parse failed, retrying... Raw was:', raw)
     try {
       raw = await callGemini()
       suggestion = parseJson(raw)
