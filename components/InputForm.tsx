@@ -333,7 +333,7 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
         disabled={loading || !isValid}
       >
         {loading ? (
-          <LoadingSpinner text="Analysing with Claude..." />
+          <LoadingSpinner text="Generating UTMs..." />
         ) : (
           'Generate UTMs →'
         )}
