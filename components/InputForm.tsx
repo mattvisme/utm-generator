@@ -15,6 +15,20 @@ interface Props {
 const currentYear = new Date().getFullYear()
 const YEARS = [currentYear - 1, currentYear, currentYear + 1].map(String)
 
+const toggleButtonStyle = (active: boolean) => ({
+  flex: 1,
+  padding: '0.5rem',
+  borderRadius: 'var(--radius-sm)',
+  border: active ? '2px solid var(--accent)' : '1px solid var(--border)',
+  background: active ? 'var(--surface2)' : 'var(--surface)',
+  color: active ? 'var(--accent-dark)' : 'var(--text-muted)',
+  fontFamily: 'Lato, sans-serif',
+  fontSize: '0.875rem',
+  fontWeight: active ? 700 : 400,
+  cursor: 'pointer',
+  transition: 'all 0.15s ease',
+})
+
 export default function InputForm({ onSubmit, loading, initialData }: Props) {
   const [url, setUrl] = useState(initialData?.url || '')
   const [channel, setChannel] = useState(initialData?.channel || '')
@@ -24,6 +38,8 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
   const [campaignMonth, setCampaignMonth] = useState(initialData?.campaign_month || '')
   const [campaignYear, setCampaignYear] = useState(initialData?.campaign_year || String(currentYear))
   const [cohort, setCohort] = useState(initialData?.cohort || '')
+  const [isAbTest, setIsAbTest] = useState(initialData?.is_ab_test || false)
+  const [abVariant, setAbVariant] = useState(initialData?.ab_variant || '')
   const [urlError, setUrlError] = useState('')
   const [urlNotice, setUrlNotice] = useState('')
 
@@ -37,10 +53,13 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
     }
   }, [initialData])
 
-  // Clear cohort when switching to a non-cohort channel
   useEffect(() => {
     if (!showCohort) setCohort('')
   }, [showCohort])
+
+  useEffect(() => {
+    if (!isAbTest) setAbVariant('')
+  }, [isAbTest])
 
   const handleUrlBlur = () => {
     if (!url) return
@@ -71,6 +90,8 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
       campaign_month: campaignMonth,
       campaign_year: campaignYear,
       cohort,
+      is_ab_test: isAbTest,
+      ab_variant: abVariant,
       cleanUrl: base,
     })
   }
@@ -211,6 +232,55 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
         </p>
       </div>
 
+      {/* A/B test variant */}
+      <div>
+        {fieldLabel('A/B Test', true)}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <button
+            type="button"
+            onClick={() => setIsAbTest(!isAbTest)}
+            disabled={loading}
+            style={{
+              ...toggleButtonStyle(isAbTest),
+              flex: 'none',
+              padding: '0.5rem 1rem',
+            }}
+          >
+            {isAbTest ? '✓ A/B test variant' : 'Mark as A/B test variant'}
+          </button>
+        </div>
+
+        {isAbTest && (
+          <div style={{ marginTop: '0.75rem' }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem', marginBottom: '0.5rem', fontFamily: 'Lato, sans-serif' }}>
+              Variant label — goes into <code style={{ background: '#f0f0f0', padding: '1px 4px', borderRadius: '3px' }}>utm_content</code>
+            </p>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              {['a', 'b', 'c'].map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => setAbVariant(v)}
+                  disabled={loading}
+                  style={{ ...toggleButtonStyle(abVariant === v), flex: 'none', padding: '0.4rem 0.875rem' }}
+                >
+                  Variant {v.toUpperCase()}
+                </button>
+              ))}
+              <input
+                type="text"
+                className="input-field"
+                placeholder="or custom label"
+                value={['a', 'b', 'c'].includes(abVariant) ? '' : abVariant}
+                onChange={(e) => setAbVariant(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '_'))}
+                disabled={loading}
+                style={{ flex: 1 }}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Cohort — conditional on Email/Newsletter and Product Feature */}
       {showCohort && (
         <div>
@@ -222,19 +292,7 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
                 type="button"
                 onClick={() => setCohort(val)}
                 disabled={loading}
-                style={{
-                  flex: 1,
-                  padding: '0.5rem',
-                  borderRadius: 'var(--radius-sm)',
-                  border: cohort === val ? '2px solid var(--accent)' : '1px solid var(--border)',
-                  background: cohort === val ? 'var(--surface2)' : 'var(--surface)',
-                  color: cohort === val ? 'var(--accent-dark)' : 'var(--text-muted)',
-                  fontFamily: 'Lato, sans-serif',
-                  fontSize: '0.875rem',
-                  fontWeight: cohort === val ? 700 : 400,
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                }}
+                style={toggleButtonStyle(cohort === val)}
               >
                 {val === '' ? 'Both' : val.charAt(0).toUpperCase() + val.slice(1)}
               </button>

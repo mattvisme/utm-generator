@@ -7,7 +7,7 @@ import { GenerateRequest } from '@/types/utm'
 export async function POST(req: NextRequest) {
   try {
     const body: GenerateRequest = await req.json()
-    const { url, channel, description, vc_parameter, campaign_name, campaign_date, cohort } = body
+    const { url, channel, description, vc_parameter, campaign_name, campaign_date, cohort, ab_variant } = body
 
     if (!url || !channel || !description) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -26,7 +26,8 @@ export async function POST(req: NextRequest) {
       vc_parameter,
       campaign_name,
       campaign_date,
-      cohort
+      cohort,
+      ab_variant
     )
 
     const { value: campaign, truncated } = truncateCampaign(suggestion.utm_campaign)

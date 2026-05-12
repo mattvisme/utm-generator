@@ -19,6 +19,7 @@ APPROVED utm_medium VALUES — use only these, mapped to GA4 channels:
 - referral       → Referral
 - affiliate      → Affiliates
 - badge          → Custom (requires GA4 setup — set ga4_setup_required: true)
+- internal       → Custom on-site CTA (requires GA4 setup — set ga4_setup_required: true)
 
 utm_campaign NAMING RULES:
 - Lowercase only. Underscores only. No hyphens, no spaces.
@@ -45,6 +46,7 @@ CHANNEL RULES:
 - Product badge/watermark on exported PDF: source=exported_pdf, medium=badge, ga4_setup_required=true
 - Affiliate/Partner: source=affiliate_[partner], medium=affiliate
 - Display: source=appropriate network, medium=display
+- Blog / On-site CTA: source=blog, medium=internal. Set ga4_setup_required=true with reason "utm_medium=internal requires a GA4 custom channel group."
 
 RESPONSE RULES:
 Return ONLY a valid JSON object. No markdown, no code fences, no explanation text outside the JSON. If you cannot determine a value with confidence, use your best judgment based on context — do not return null for required fields.
@@ -72,7 +74,8 @@ export async function generateUTMs(
   vcParameter?: string,
   campaignName?: string,
   campaignDate?: string,
-  cohort?: string
+  cohort?: string,
+  abVariant?: string
 ): Promise<UTMSuggestion> {
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -88,6 +91,9 @@ export async function generateUTMs(
       : null,
     cohort
       ? `Target audience cohort: ${cohort} accounts (managed = enterprise/CSM accounts, unmanaged = self-serve accounts). Incorporate into utm_content if relevant.`
+      : null,
+    abVariant
+      ? `This is an A/B test variant. Variant label: "${abVariant}". Set utm_content to this variant label (e.g. "variant_${abVariant}"). This is critical for comparing variant performance in GA4.`
       : null,
     vcParameter ? `Existing vc= value to preserve: ${vcParameter}` : null,
   ]

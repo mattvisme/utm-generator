@@ -21,6 +21,7 @@ export interface GenerateRequest {
   campaign_name?: string
   campaign_date?: string   // formatted as "apr_2026"
   cohort?: 'managed' | 'unmanaged'
+  ab_variant?: string      // e.g. "a", "b", "c", or custom label
 }
 
 export interface GenerateResponse {
@@ -66,6 +67,8 @@ export interface FormData {
   campaign_month: string  // "04"
   campaign_year: string   // "2026"
   cohort: string          // "managed" | "unmanaged" | ""
+  is_ab_test: boolean
+  ab_variant: string      // "a" | "b" | "c" | custom
 }
 
 export const CHANNELS = [
@@ -78,6 +81,7 @@ export const CHANNELS = [
   'Display',
   'Affiliate / Partner',
   'Product Feature',
+  'Blog / On-site CTA',
   'Other',
 ] as const
 

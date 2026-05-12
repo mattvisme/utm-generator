@@ -35,6 +35,7 @@ export default function HomePage() {
             ? `${['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'][parseInt(data.campaign_month) - 1]}_${data.campaign_year}`
             : undefined,
           cohort: data.cohort || undefined,
+          ab_variant: data.is_ab_test && data.ab_variant ? data.ab_variant : undefined,
         }),
       })
       const json = await res.json()
