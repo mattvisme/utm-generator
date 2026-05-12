@@ -195,7 +195,7 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
           disabled={loading}
         />
         <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem', marginTop: '0.375rem', fontFamily: 'Lato, sans-serif' }}>
-          Lowercase, underscores only. If blank, Claude will suggest one.
+          Lowercase, underscores only. If blank, one will be suggested for you.
         </p>
       </div>
 
