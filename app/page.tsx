@@ -94,10 +94,6 @@ export default function HomePage() {
   const handleReject = () => {
     setGenerateResult(null)
     setGenerateError('')
-    // Preserve URL and description, clear channel
-    if (formData) {
-      setFormData({ ...formData, channel: '' })
-    }
     setAppState('input')
   }
 
