@@ -177,13 +177,13 @@ export default function UTMResult({ result, formData, onApprove, onReject, appro
             lineHeight: '1.5',
           }}
         >
-          <p style={{ fontWeight: 700, marginBottom: '0.25rem' }}>⚠️ GA4 Custom Setup Required</p>
+          <p style={{ fontWeight: 700, marginBottom: '0.25rem' }}>⚠️ Non-standard GA4 channel</p>
           <p>
             <code style={{ background: 'rgba(0,0,0,0.08)', borderRadius: '3px', padding: '1px 4px' }}>
               utm_medium={suggestion.utm_medium}
             </code>{' '}
-            is not a GA4 default channel. On approval, Matt (Analytics) will be notified via Slack
-            to configure the custom channel group. This is a one-time setup per medium value.
+            is not a GA4 default channel. Traffic will appear under <strong>Unassigned</strong> in channel reports.
+            You can still filter by <code style={{ background: 'rgba(0,0,0,0.08)', borderRadius: '3px', padding: '1px 4px' }}>utm_medium = {suggestion.utm_medium}</code> in GA4 Explorations to analyse performance.
           </p>
         </div>
       )}
