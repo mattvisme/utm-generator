@@ -1,3 +1,4 @@
+import Anthropic from '@anthropic-ai/sdk'
 import { UTMSuggestion } from '@/types/utm'
 
 const SYSTEM_PROMPT = `You are a UTM parameter specialist for Visme, a SaaS visual content creation platform (design tool competing with Canva and Figma). You generate standardized UTM parameters that strictly follow Visme's approved framework.
@@ -76,8 +77,10 @@ export async function generateUTMs(
   cohort?: string,
   abVariant?: string
 ): Promise<UTMSuggestion> {
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) throw new Error('GEMINI_API_KEY is not configured')
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey) throw new Error('ANTHROPIC_API_KEY is not configured')
+
+  const client = new Anthropic({ apiKey })
 
   const userMessage = [
     `Channel: ${channel}`,
@@ -100,36 +103,17 @@ export async function generateUTMs(
     .filter(Boolean)
     .join('\n')
 
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=${apiKey}`
-
-  const body = {
-    system_instruction: {
-      parts: [{ text: SYSTEM_PROMPT }],
-    },
-    contents: [
-      { role: 'user', parts: [{ text: userMessage }] },
-    ],
-    generationConfig: {
+  const callClaude = async (): Promise<string> => {
+    const msg = await client.messages.create({
+      model: 'claude-haiku-4-5',
+      max_tokens: 500,
       temperature: 0,
-      maxOutputTokens: 500,
-      responseMimeType: 'application/json',
-    },
-  }
-
-  const callGemini = async (): Promise<string> => {
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      system: SYSTEM_PROMPT,
+      messages: [{ role: 'user', content: userMessage }],
     })
-    if (!res.ok) {
-      const errText = await res.text()
-      throw new Error(`Gemini API ${res.status}: ${errText}`)
-    }
-    const data = await res.json()
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text
-    if (!text) throw new Error(`Unexpected Gemini response shape: ${JSON.stringify(data)}`)
-    return text
+    const block = msg.content[0]
+    if (block.type !== 'text') throw new Error('Unexpected response type from Claude')
+    return block.text
   }
 
   const parseJson = (text: string): UTMSuggestion => {
@@ -140,14 +124,14 @@ export async function generateUTMs(
   let raw: string
   try {
     raw = await Promise.race([
-      callGemini(),
+      callClaude(),
       new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Gemini API timeout after 15s')), 15000)
+        setTimeout(() => reject(new Error('Claude API timeout after 15s')), 15000)
       ),
     ])
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
-    console.error('[gemini] API error:', msg)
+    console.error('[claude] API error:', msg)
     throw new Error(msg)
   }
 
@@ -155,11 +139,17 @@ export async function generateUTMs(
   try {
     suggestion = parseJson(raw)
   } catch {
-    console.warn('[gemini] Parse failed. Raw response:', raw)
-    throw new Error(`Failed to parse Gemini response: ${raw.slice(0, 200)}`)
+    console.warn('[claude] Parse failed, retrying... Raw was:', raw)
+    try {
+      raw = await callClaude()
+      suggestion = parseJson(raw)
+    } catch (err) {
+      console.error('[claude] Second parse failed:', err)
+      throw new Error('Failed to generate UTMs. Please try again.')
+    }
   }
 
-  console.log('[gemini] Generated:', {
+  console.log('[claude] Generated:', {
     source: suggestion.utm_source,
     medium: suggestion.utm_medium,
     campaign: suggestion.utm_campaign,

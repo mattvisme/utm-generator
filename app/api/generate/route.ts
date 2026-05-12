@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { generateUTMs } from '@/lib/gemini'
+import { generateUTMs } from '@/lib/claude'
 import { findSimilarRecord } from '@/lib/notion'
 import { isVismeUrl, stripUtmParams, buildFinalUrl, truncateCampaign } from '@/lib/utm-utils'
 import { GenerateRequest } from '@/types/utm'
