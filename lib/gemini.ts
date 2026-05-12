@@ -1,4 +1,3 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
 import { UTMSuggestion } from '@/types/utm'
 
 const SYSTEM_PROMPT = `You are a UTM parameter specialist for Visme, a SaaS visual content creation platform (design tool competing with Canva and Figma). You generate standardized UTM parameters that strictly follow Visme's approved framework.
@@ -80,12 +79,6 @@ export async function generateUTMs(
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) throw new Error('GEMINI_API_KEY is not configured')
 
-  const genAI = new GoogleGenerativeAI(apiKey)
-  const model = genAI.getGenerativeModel({
-    model: 'gemini-1.5-flash',
-    systemInstruction: SYSTEM_PROMPT,
-  })
-
   const userMessage = [
     `Channel: ${channel}`,
     `URL: ${url}`,
@@ -107,16 +100,36 @@ export async function generateUTMs(
     .filter(Boolean)
     .join('\n')
 
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`
+
+  const body = {
+    system_instruction: {
+      parts: [{ text: SYSTEM_PROMPT }],
+    },
+    contents: [
+      { role: 'user', parts: [{ text: userMessage }] },
+    ],
+    generationConfig: {
+      temperature: 0,
+      maxOutputTokens: 500,
+      responseMimeType: 'application/json',
+    },
+  }
+
   const callGemini = async (): Promise<string> => {
-    const result = await model.generateContent({
-      contents: [{ role: 'user', parts: [{ text: userMessage }] }],
-      generationConfig: {
-        temperature: 0,
-        maxOutputTokens: 500,
-        responseMimeType: 'application/json',
-      },
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
     })
-    return result.response.text()
+    if (!res.ok) {
+      const errText = await res.text()
+      throw new Error(`Gemini API ${res.status}: ${errText}`)
+    }
+    const data = await res.json()
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text
+    if (!text) throw new Error(`Unexpected Gemini response shape: ${JSON.stringify(data)}`)
+    return text
   }
 
   const parseJson = (text: string): UTMSuggestion => {
@@ -129,26 +142,21 @@ export async function generateUTMs(
     raw = await Promise.race([
       callGemini(),
       new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Gemini API timeout')), 15000)
+        setTimeout(() => reject(new Error('Gemini API timeout after 15s')), 15000)
       ),
     ])
   } catch (err) {
-    console.error('[gemini] API error:', err)
-    throw new Error('Failed to generate UTMs. Please try again.')
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error('[gemini] API error:', msg)
+    throw new Error(msg)
   }
 
   let suggestion: UTMSuggestion
   try {
     suggestion = parseJson(raw)
   } catch {
-    console.warn('[gemini] First parse failed, retrying... Raw was:', raw)
-    try {
-      raw = await callGemini()
-      suggestion = parseJson(raw)
-    } catch (err) {
-      console.error('[gemini] Second parse failed:', err, 'Raw:', raw)
-      throw new Error('Failed to generate UTMs. Please try again.')
-    }
+    console.warn('[gemini] Parse failed. Raw response:', raw)
+    throw new Error(`Failed to parse Gemini response: ${raw.slice(0, 200)}`)
   }
 
   console.log('[gemini] Generated:', {

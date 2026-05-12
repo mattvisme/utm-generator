@@ -165,7 +165,9 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
 
       {/* Description */}
       <div>
-        <label className="label" htmlFor="description">What is this link for?</label>
+        <label className="label" htmlFor="description">
+          What is this link for? <span style={{ color: '#DC2626' }}>*</span>
+        </label>
         <textarea
           id="description"
           className="input-field"
