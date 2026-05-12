@@ -141,11 +141,7 @@ export default function HomePage() {
                 <InputForm
                   onSubmit={handleGenerate}
                   loading={loading}
-                  initialData={
-                    formData
-                      ? { url: formData.url, description: formData.description, channel: formData.channel, vc_parameter: formData.vc_parameter }
-                      : undefined
-                  }
+                  initialData={formData ?? undefined}
                 />
                 {generateError && (
                   <p

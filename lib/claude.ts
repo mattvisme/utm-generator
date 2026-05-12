@@ -7,7 +7,7 @@ VISME CONTEXT:
 Visme helps users create presentations, infographics, reports, charts, and branded content. Customers include marketers, designers, educators, and enterprise teams. Key conversion goals are free trial signups and paid plan upgrades.
 
 APPROVED utm_source VALUES:
-google, bing, yandex, newsletter, email, linkedin, facebook, instagram, twitter, tiktok, youtube, exported_pdf, affiliate_[partner_name]
+google, bing, yandex, newsletter, email, linkedin, facebook, instagram, twitter, tiktok, youtube, exported_pdf, visme_app, blog, affiliate_[partner_name]
 For affiliate, replace [partner_name] with the specific partner name in lowercase (e.g. affiliate_buffer, affiliate_zapier).
 For any other source not in this list, use the closest lowercase equivalent and set ga4_setup_required=true.
 
@@ -78,8 +78,6 @@ JSON STRUCTURE:
   "ga4_setup_required": false,
   "ga4_setup_reason": "string | null",
   "ppc_warning": false,
-  "ppc_warning_message": "string | null",
-  "confidence": 0.95,
   "reasoning": "1-2 sentences explaining the key parameter choices."
 }`
 
@@ -109,7 +107,7 @@ export async function generateUTMs(
       ? `Campaign date suffix to append to campaign name: _${campaignDate}`
       : null,
     cohort
-      ? `Target audience cohort: ${cohort} accounts (managed = enterprise/CSM accounts, unmanaged = self-serve accounts). Incorporate into utm_content if relevant.`
+      ? `Target audience cohort: ${cohort} (managed = enterprise/CSM accounts, unmanaged = self-serve). Follow the utm_content rules in the system prompt to decide whether to include this.`
       : null,
     abVariant
       ? `This is an A/B test variant. Variant label: "${abVariant}". Set utm_content to this variant label (e.g. "variant_${abVariant}"). This is critical for comparing variant performance in GA4.`
@@ -122,7 +120,7 @@ export async function generateUTMs(
   const callClaude = async (): Promise<string> => {
     const msg = await client.messages.create({
       model: 'claude-haiku-4-5',
-      max_tokens: 500,
+      max_tokens: 600,
       temperature: 0,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: userMessage }],
@@ -151,13 +149,21 @@ export async function generateUTMs(
     throw new Error(msg)
   }
 
+  const withTimeout = (promise: Promise<string>): Promise<string> =>
+    Promise.race([
+      promise,
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Claude API timeout after 15s')), 15000)
+      ),
+    ])
+
   let suggestion: UTMSuggestion
   try {
     suggestion = parseJson(raw)
   } catch {
     console.warn('[claude] Parse failed, retrying... Raw was:', raw)
     try {
-      raw = await callClaude()
+      raw = await withTimeout(callClaude())
       suggestion = parseJson(raw)
     } catch (err) {
       console.error('[claude] Second parse failed:', err)

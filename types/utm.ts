@@ -8,9 +8,10 @@ export interface UTMSuggestion {
   ga4_setup_required: boolean
   ga4_setup_reason: string | null
   ppc_warning: boolean
-  ppc_warning_message: string | null
-  confidence: number
   reasoning: string
+  // Deprecated — no longer requested from the LLM
+  ppc_warning_message?: string | null
+  confidence?: number
 }
 
 export interface GenerateRequest {

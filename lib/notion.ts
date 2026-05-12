@@ -15,7 +15,14 @@ export async function saveUTMRecord(data: SaveRequest): Promise<string> {
         title: [
           {
             text: {
-              content: `${data.utm_source} / ${data.utm_medium} / ${data.utm_campaign}`,
+              content: [
+                data.utm_source,
+                data.utm_medium,
+                data.utm_campaign,
+                data.utm_content || null,
+              ]
+                .filter(Boolean)
+                .join(' / '),
             },
           },
         ],
@@ -49,7 +56,7 @@ export async function saveUTMRecord(data: SaveRequest): Promise<string> {
         rich_text: [{ text: { content: data.ga4_setup_reason || '' } }],
       },
       Reasoning: {
-        rich_text: [{ text: { content: data.reasoning || '' } }],
+        rich_text: [{ text: { content: (data.reasoning || '').slice(0, 2000) } }],
       },
       Created: { date: { start: new Date().toISOString() } },
       'Created By': {

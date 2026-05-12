@@ -39,12 +39,20 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Normalise campaign name server-side (lowercase, underscores only)
+    // Normalise all string UTM values server-side
+    suggestion.utm_source = suggestion.utm_source.toLowerCase().trim()
     suggestion.utm_campaign = suggestion.utm_campaign
       .toLowerCase()
       .replace(/[^a-z0-9_]/g, '_')
       .replace(/_+/g, '_')
       .replace(/^_|_$/g, '')
+    if (suggestion.utm_content) {
+      suggestion.utm_content = suggestion.utm_content
+        .toLowerCase()
+        .replace(/[^a-z0-9_]/g, '_')
+        .replace(/_+/g, '_')
+        .replace(/^_|_$/g, '')
+    }
 
     const { value: campaign, truncated } = truncateCampaign(suggestion.utm_campaign)
     if (truncated) {
