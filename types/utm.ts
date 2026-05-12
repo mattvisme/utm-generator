@@ -1,3 +1,8 @@
+export interface NotionUser {
+  id: string
+  name: string
+}
+
 export interface UTMSuggestion {
   utm_source: string
   utm_medium: string
@@ -50,6 +55,8 @@ export interface SaveRequest {
   ga4_setup_required: boolean
   ga4_setup_reason: string | null
   reasoning: string
+  created_by_id?: string
+  created_by_name?: string
 }
 
 export interface SaveResponse {
@@ -70,6 +77,8 @@ export interface FormData {
   cohort: string          // "managed" | "unmanaged" | ""
   is_ab_test: boolean
   ab_variant: string      // "a" | "b" | "c" | custom
+  created_by_id: string
+  created_by_name: string
 }
 
 export const CHANNELS = [

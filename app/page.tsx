@@ -75,6 +75,8 @@ export default function HomePage() {
           ga4_setup_required: suggestion.ga4_setup_required,
           ga4_setup_reason: suggestion.ga4_setup_reason,
           reasoning: suggestion.reasoning,
+          created_by_id: formData.created_by_id || undefined,
+          created_by_name: formData.created_by_name || undefined,
         }),
       })
       const json = await res.json()

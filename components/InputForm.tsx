@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { FormData, CHANNELS, PPC_CHANNELS, COHORT_CHANNELS, MONTHS, Channel } from '@/types/utm'
+import { FormData, NotionUser, CHANNELS, PPC_CHANNELS, COHORT_CHANNELS, MONTHS, Channel } from '@/types/utm'
 import { isVismeUrl, stripUtmParams } from '@/lib/utm-utils'
 import PPCWarning from './PPCWarning'
 import LoadingSpinner from './LoadingSpinner'
@@ -12,6 +12,7 @@ interface Props {
   initialData?: Partial<FormData>
 }
 
+const LS_KEY = 'utm_created_by'
 const currentYear = new Date().getFullYear()
 const YEARS = [currentYear - 1, currentYear, currentYear + 1].map(String)
 
@@ -43,8 +44,34 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
   const [urlError, setUrlError] = useState('')
   const [urlNotice, setUrlNotice] = useState('')
 
+  // Created by
+  const [users, setUsers] = useState<NotionUser[]>([])
+  const [createdById, setCreatedById] = useState(initialData?.created_by_id || '')
+  const [createdByName, setCreatedByName] = useState(initialData?.created_by_name || '')
+
   const isPPC = PPC_CHANNELS.includes(channel as Channel)
   const showCohort = COHORT_CHANNELS.includes(channel as Channel)
+
+  // Fetch user list once on mount
+  useEffect(() => {
+    fetch('/api/users')
+      .then((r) => r.json())
+      .then((data) => setUsers(data.users || []))
+      .catch(() => setUsers([]))
+  }, [])
+
+  // Restore saved user from localStorage
+  useEffect(() => {
+    if (initialData?.created_by_id) return // already set from formData
+    try {
+      const saved = localStorage.getItem(LS_KEY)
+      if (saved) {
+        const { id, name } = JSON.parse(saved)
+        setCreatedById(id)
+        setCreatedByName(name)
+      }
+    } catch { /* ignore */ }
+  }, [initialData?.created_by_id])
 
   useEffect(() => {
     if (initialData) {
@@ -60,6 +87,19 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
   useEffect(() => {
     if (!isAbTest) setAbVariant('')
   }, [isAbTest])
+
+  const handleUserChange = (userId: string) => {
+    const user = users.find((u) => u.id === userId)
+    if (user) {
+      setCreatedById(user.id)
+      setCreatedByName(user.name)
+      try { localStorage.setItem(LS_KEY, JSON.stringify({ id: user.id, name: user.name })) } catch { /* ignore */ }
+    } else {
+      setCreatedById('')
+      setCreatedByName('')
+      try { localStorage.removeItem(LS_KEY) } catch { /* ignore */ }
+    }
+  }
 
   const handleUrlBlur = () => {
     if (!url) return
@@ -92,6 +132,8 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
       cohort,
       is_ab_test: isAbTest,
       ab_variant: abVariant,
+      created_by_id: createdById,
+      created_by_name: createdByName,
       cleanUrl: base,
     })
   }
@@ -111,6 +153,23 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
 
   return (
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+
+      {/* Created by */}
+      <div>
+        {fieldLabel('Created by', true)}
+        <select
+          className="input-field"
+          value={createdById}
+          onChange={(e) => handleUserChange(e.target.value)}
+          disabled={loading}
+          style={{ cursor: 'pointer' }}
+        >
+          <option value="">-- Select your name --</option>
+          {users.map((u) => (
+            <option key={u.id} value={u.id}>{u.name}</option>
+          ))}
+        </select>
+      </div>
 
       {/* URL */}
       <div>

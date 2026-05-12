@@ -59,9 +59,9 @@ export async function saveUTMRecord(data: SaveRequest): Promise<string> {
         rich_text: [{ text: { content: (data.reasoning || '').slice(0, 2000) } }],
       },
       Created: { date: { start: new Date().toISOString() } },
-      'Created By': {
-        rich_text: [{ text: { content: 'UTM Generator' } }],
-      },
+      'Created By': data.created_by_id
+        ? { people: [{ id: data.created_by_id }] }
+        : { rich_text: [{ text: { content: data.created_by_name || 'UTM Generator' } }] },
     },
   })
 
