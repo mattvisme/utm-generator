@@ -60,5 +60,7 @@ export function buildFinalUrl(
 
 export function truncateCampaign(campaign: string, max = 30): { value: string; truncated: boolean } {
   if (campaign.length <= max) return { value: campaign, truncated: false }
-  return { value: campaign.slice(0, max), truncated: true }
+  // Strip any trailing underscore left by the slice boundary
+  const sliced = campaign.slice(0, max).replace(/_+$/, '')
+  return { value: sliced, truncated: true }
 }

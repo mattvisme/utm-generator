@@ -89,9 +89,11 @@ export const CHANNELS = [
   'Paid Search (Google Ads)',
   'Paid Search (Bing Ads)',
   'Display',
+  'Referral',
   'Affiliate / Partner',
   'Product Feature',
   'Blog / On-site CTA',
+  'Exported PDF / Watermark',
   'Other',
 ] as const
 
@@ -121,6 +123,26 @@ export const APPROVED_MEDIUMS = [
 ] as const
 
 export type ApprovedMedium = (typeof APPROVED_MEDIUMS)[number]
+
+// Approved utm_source base values. affiliate_[partner] is also valid (checked by regex).
+export const APPROVED_SOURCES = [
+  'google',
+  'bing',
+  'yandex',
+  'newsletter',
+  'email',
+  'linkedin',
+  'facebook',
+  'instagram',
+  'twitter',
+  'tiktok',
+  'youtube',
+  'exported_pdf',
+  'visme_app',
+  'blog',
+] as const
+
+export type ApprovedSource = (typeof APPROVED_SOURCES)[number]
 
 export const MONTHS = [
   { value: '01', label: 'Jan' },

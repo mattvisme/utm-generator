@@ -59,9 +59,11 @@ CHANNEL RULES:
 - YouTube organic: source=youtube, medium=social
 - Product badge/watermark on exported PDF: source=exported_pdf, medium=badge, ga4_setup_required=true
 - Affiliate/Partner: source=affiliate_[partner], medium=affiliate
-- Display: source=appropriate ad network (e.g. google, criteo, adroll), medium=display
+- Display: source=the ad network name in lowercase (e.g. google, criteo, adroll), medium=display. If the source is not google, bing, or yandex, set ga4_setup_required=true with reason "Non-standard display network source — confirm GA4 channel grouping."
+- Referral (link placed on a third-party site, review platform, or directory — not a paid affiliate): source=the referring site name in lowercase without TLD (e.g. g2, capterra, techradar, hubspot), medium=referral. ga4_setup_required=false (referral is a GA4 default channel).
 - Product Feature (in-app link or in-product prompt): source=visme_app, medium=internal. Set ga4_setup_required=true with reason "utm_medium=internal requires a GA4 custom channel group."
 - Blog / On-site CTA (link within visme.co blog or website): source=blog, medium=internal. Set ga4_setup_required=true with reason "utm_medium=internal requires a GA4 custom channel group."
+- Exported PDF / Watermark (product watermark or badge on content exported from Visme): source=exported_pdf, medium=badge. Set ga4_setup_required=true with reason "utm_medium=badge requires a GA4 custom channel group."
 - Other: use your best judgment from the description. If the medium is not in the approved list above, set ga4_setup_required=true and explain in ga4_setup_reason.
 
 RESPONSE RULES:
@@ -135,20 +137,6 @@ export async function generateUTMs(
     return JSON.parse(cleaned)
   }
 
-  let raw: string
-  try {
-    raw = await Promise.race([
-      callClaude(),
-      new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Claude API timeout after 15s')), 15000)
-      ),
-    ])
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    console.error('[claude] API error:', msg)
-    throw new Error(msg)
-  }
-
   const withTimeout = (promise: Promise<string>): Promise<string> =>
     Promise.race([
       promise,
@@ -156,6 +144,15 @@ export async function generateUTMs(
         setTimeout(() => reject(new Error('Claude API timeout after 15s')), 15000)
       ),
     ])
+
+  let raw: string
+  try {
+    raw = await withTimeout(callClaude())
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error('[claude] API error:', msg)
+    throw new Error(msg)
+  }
 
   let suggestion: UTMSuggestion
   try {
@@ -175,7 +172,6 @@ export async function generateUTMs(
     source: suggestion.utm_source,
     medium: suggestion.utm_medium,
     campaign: suggestion.utm_campaign,
-    confidence: suggestion.confidence,
   })
 
   return suggestion

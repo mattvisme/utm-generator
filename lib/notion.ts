@@ -59,9 +59,9 @@ export async function saveUTMRecord(data: SaveRequest): Promise<string> {
         rich_text: [{ text: { content: (data.reasoning || '').slice(0, 2000) } }],
       },
       Created: { date: { start: new Date().toISOString() } },
-      'Created By': data.created_by_id
-        ? { people: [{ id: data.created_by_id }] }
-        : { rich_text: [{ text: { content: data.created_by_name || 'UTM Generator' } }] },
+      // Only set Created By when we have a valid Notion user ID — the column is
+      // typed as PERSON and will reject a rich_text fallback with a 400 error.
+      ...(data.created_by_id ? { 'Created By': { people: [{ id: data.created_by_id }] } } : {}),
     },
   })
 

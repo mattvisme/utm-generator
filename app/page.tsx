@@ -15,7 +15,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(false)
   const [approving, setApproving] = useState(false)
   const [saveError, setSaveError] = useState('')
-  const [, setNotionUrl] = useState('')
+  const [notionUrl, setNotionUrl] = useState('')
 
   const handleGenerate = async (data: FormData & { cleanUrl: string }) => {
     setFormData(data)
@@ -235,6 +235,7 @@ export default function HomePage() {
               <SuccessState
                 result={generateResult}
                 onReset={handleReset}
+                notionUrl={notionUrl}
               />
             </div>
           )}

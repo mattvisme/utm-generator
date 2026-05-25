@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { generateUTMs } from '@/lib/claude'
 import { findSimilarRecord } from '@/lib/notion'
 import { isVismeUrl, stripUtmParams, buildFinalUrl, truncateCampaign } from '@/lib/utm-utils'
-import { GenerateRequest, APPROVED_MEDIUMS } from '@/types/utm'
+import { GenerateRequest, APPROVED_MEDIUMS, APPROVED_SOURCES } from '@/types/utm'
 
 export async function POST(req: NextRequest) {
   try {
@@ -52,6 +52,25 @@ export async function POST(req: NextRequest) {
         .replace(/[^a-z0-9_]/g, '_')
         .replace(/_+/g, '_')
         .replace(/^_|_$/g, '')
+    }
+    if (suggestion.utm_term) {
+      suggestion.utm_term = suggestion.utm_term.toLowerCase().trim()
+    }
+
+    // Warn if source is not in the approved list (affiliate_* pattern is also valid)
+    const isApprovedSource =
+      (APPROVED_SOURCES as readonly string[]).includes(suggestion.utm_source) ||
+      /^affiliate_[a-z0-9_]+$/.test(suggestion.utm_source)
+    if (!isApprovedSource) {
+      console.warn(`[generate] Non-standard source: "${suggestion.utm_source}" — verifying GA4 flag`)
+      // Non-standard sources (e.g. referral domains like g2, criteo) still go through
+      // but must be flagged so the team knows to check GA4 channel grouping.
+      if (!suggestion.ga4_setup_required) {
+        suggestion.ga4_setup_required = true
+        suggestion.ga4_setup_reason =
+          suggestion.ga4_setup_reason ||
+          `utm_source "${suggestion.utm_source}" is not a standard Visme source — confirm it will map to the correct GA4 channel group.`
+      }
     }
 
     const { value: campaign, truncated } = truncateCampaign(suggestion.utm_campaign)

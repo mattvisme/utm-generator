@@ -8,9 +8,10 @@ const NOTION_DB_URL = 'https://www.notion.so/visme/34ad7facd2ae80469d62cb427f8e0
 interface Props {
   result: GenerateResponse
   onReset: () => void
+  notionUrl?: string
 }
 
-export default function SuccessState({ result, onReset }: Props) {
+export default function SuccessState({ result, onReset, notionUrl }: Props) {
   const [copied, setCopied] = useState(false)
   const { suggestion, final_url } = result
 
@@ -120,7 +121,7 @@ export default function SuccessState({ result, onReset }: Props) {
           Generate Another
         </button>
         <a
-          href={NOTION_DB_URL}
+          href={notionUrl || NOTION_DB_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="btn-primary"
@@ -134,7 +135,7 @@ export default function SuccessState({ result, onReset }: Props) {
             justifyContent: 'center',
           }}
         >
-          View in Notion →
+          {notionUrl ? 'View Record →' : 'View in Notion →'}
         </a>
       </div>
     </div>

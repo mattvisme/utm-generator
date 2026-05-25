@@ -40,12 +40,18 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
   const [campaignYear, setCampaignYear] = useState(initialData?.campaign_year || String(currentYear))
   const [cohort, setCohort] = useState(initialData?.cohort || '')
   const [isAbTest, setIsAbTest] = useState(initialData?.is_ab_test || false)
-  const [abVariant, setAbVariant] = useState(initialData?.ab_variant || '')
+  // Separate preset (a/b/c) and custom label so switching between them never
+  // leaves stale text in the custom input
+  const initVariant = initialData?.ab_variant || ''
+  const [abPreset, setAbPreset] = useState(['a', 'b', 'c'].includes(initVariant) ? initVariant : '')
+  const [abCustom, setAbCustom] = useState(['a', 'b', 'c'].includes(initVariant) ? '' : initVariant)
+  const abVariant = abPreset || abCustom
   const [urlError, setUrlError] = useState('')
   const [urlNotice, setUrlNotice] = useState('')
 
   // Created by
   const [users, setUsers] = useState<NotionUser[]>([])
+  const [usersLoading, setUsersLoading] = useState(true)
   const [createdById, setCreatedById] = useState(initialData?.created_by_id || '')
   const [createdByName, setCreatedByName] = useState(initialData?.created_by_name || '')
 
@@ -54,10 +60,11 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
 
   // Fetch user list once on mount
   useEffect(() => {
+    setUsersLoading(true)
     fetch('/api/users')
       .then((r) => r.json())
-      .then((data) => setUsers(data.users || []))
-      .catch(() => setUsers([]))
+      .then((data) => { setUsers(data.users || []); setUsersLoading(false) })
+      .catch(() => { setUsers([]); setUsersLoading(false) })
   }, [])
 
   // Restore saved user from localStorage
@@ -85,7 +92,7 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
   }, [showCohort])
 
   useEffect(() => {
-    if (!isAbTest) setAbVariant('')
+    if (!isAbTest) { setAbPreset(''); setAbCustom('') }
   }, [isAbTest])
 
   const handleUserChange = (userId: string) => {
@@ -161,10 +168,10 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
           className="input-field"
           value={createdById}
           onChange={(e) => handleUserChange(e.target.value)}
-          disabled={loading}
-          style={{ cursor: 'pointer' }}
+          disabled={loading || usersLoading}
+          style={{ cursor: usersLoading ? 'wait' : 'pointer' }}
         >
-          <option value="">-- Select your name --</option>
+          <option value="">{usersLoading ? 'Loading team members…' : '-- Select your name --'}</option>
           {users.map((u) => (
             <option key={u.id} value={u.id}>{u.name}</option>
           ))}
@@ -252,7 +259,7 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
           className="input-field"
           placeholder="e.g. spring_promo — leave blank for Claude to suggest"
           value={campaignName}
-          onChange={(e) => setCampaignName(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '_'))}
+          onChange={(e) => setCampaignName(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '_').replace(/_+/g, '_'))}
           disabled={loading}
         />
         <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem', marginTop: '0.375rem', fontFamily: 'Lato, sans-serif' }}>
@@ -321,9 +328,9 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
                 <button
                   key={v}
                   type="button"
-                  onClick={() => setAbVariant(v)}
+                  onClick={() => { setAbPreset(v); setAbCustom('') }}
                   disabled={loading}
-                  style={{ ...toggleButtonStyle(abVariant === v), flex: 'none', padding: '0.4rem 0.875rem' }}
+                  style={{ ...toggleButtonStyle(abPreset === v), flex: 'none', padding: '0.4rem 0.875rem' }}
                 >
                   Variant {v.toUpperCase()}
                 </button>
@@ -332,8 +339,12 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
                 type="text"
                 className="input-field"
                 placeholder="or custom label"
-                value={['a', 'b', 'c'].includes(abVariant) ? '' : abVariant}
-                onChange={(e) => setAbVariant(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '_'))}
+                value={abCustom}
+                onChange={(e) => {
+                  const val = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '_').replace(/_+/g, '_')
+                  setAbPreset('')
+                  setAbCustom(val)
+                }}
                 disabled={loading}
                 style={{ flex: 1 }}
               />
