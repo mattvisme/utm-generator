@@ -12,7 +12,6 @@ interface Props {
   initialData?: Partial<FormData>
 }
 
-const LS_KEY = 'utm_created_by'
 const currentYear = new Date().getFullYear()
 const YEARS = [currentYear - 1, currentYear, currentYear + 1].map(String)
 
@@ -67,18 +66,7 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
       .catch(() => { setUsers([]); setUsersLoading(false) })
   }, [])
 
-  // Restore saved user from localStorage
-  useEffect(() => {
-    if (initialData?.created_by_id) return // already set from formData
-    try {
-      const saved = localStorage.getItem(LS_KEY)
-      if (saved) {
-        const { id, name } = JSON.parse(saved)
-        setCreatedById(id)
-        setCreatedByName(name)
-      }
-    } catch { /* ignore */ }
-  }, [initialData?.created_by_id])
+  // No localStorage restore — Created By is required and must be chosen each session
 
   useEffect(() => {
     if (initialData) {
@@ -100,11 +88,9 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
     if (user) {
       setCreatedById(user.id)
       setCreatedByName(user.name)
-      try { localStorage.setItem(LS_KEY, JSON.stringify({ id: user.id, name: user.name })) } catch { /* ignore */ }
     } else {
       setCreatedById('')
       setCreatedByName('')
-      try { localStorage.removeItem(LS_KEY) } catch { /* ignore */ }
     }
   }
 
@@ -145,7 +131,7 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
     })
   }
 
-  const isValid = url && channel && channel !== '-- Select a channel --' && description && !urlError
+  const isValid = url && channel && channel !== '-- Select a channel --' && description && createdById && !urlError
 
   const fieldLabel = (text: string, optional = false) => (
     <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.375rem' }}>
@@ -163,7 +149,7 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
 
       {/* Created by */}
       <div>
-        {fieldLabel('Created by', true)}
+        {fieldLabel('Created by')}
         <select
           className="input-field"
           value={createdById}
