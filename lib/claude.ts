@@ -91,7 +91,8 @@ export async function generateUTMs(
   campaignName?: string,
   campaignDate?: string,
   cohort?: string,
-  abVariant?: string
+  abVariant?: string,
+  affiliateName?: string
 ): Promise<UTMSuggestion> {
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY is not configured')
@@ -113,6 +114,9 @@ export async function generateUTMs(
       : null,
     abVariant
       ? `This is an A/B test variant. Variant label: "${abVariant}". Set utm_content to this variant label (e.g. "variant_${abVariant}"). This is critical for comparing variant performance in GA4.`
+      : null,
+    affiliateName
+      ? `Affiliate name: ${affiliateName} — set utm_source to affiliate_${affiliateName} and utm_medium to affiliate.`
       : null,
     vcParameter ? `Existing vc= value to preserve: ${vcParameter}` : null,
   ]

@@ -36,6 +36,7 @@ export default function HomePage() {
             : undefined,
           cohort: data.cohort || undefined,
           ab_variant: data.is_ab_test && data.ab_variant ? data.ab_variant : undefined,
+          affiliate_name: data.affiliate_name || undefined,
         }),
       })
       const json = await res.json()

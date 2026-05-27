@@ -28,6 +28,7 @@ export interface GenerateRequest {
   campaign_date?: string   // formatted as "apr_2026"
   cohort?: 'managed' | 'unmanaged'
   ab_variant?: string      // e.g. "a", "b", "c", or custom label
+  affiliate_name?: string  // e.g. "john_smith" → utm_source=affiliate_john_smith
 }
 
 export interface GenerateResponse {
@@ -79,6 +80,7 @@ export interface FormData {
   ab_variant: string      // "a" | "b" | "c" | custom
   created_by_id: string
   created_by_name: string
+  affiliate_name: string  // normalised to lowercase_underscores
 }
 
 export const CHANNELS = [

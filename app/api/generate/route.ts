@@ -7,7 +7,7 @@ import { GenerateRequest, APPROVED_MEDIUMS, APPROVED_SOURCES } from '@/types/utm
 export async function POST(req: NextRequest) {
   try {
     const body: GenerateRequest = await req.json()
-    const { url, channel, description, vc_parameter, campaign_name, campaign_date, cohort, ab_variant } = body
+    const { url, channel, description, vc_parameter, campaign_name, campaign_date, cohort, ab_variant, affiliate_name } = body
 
     if (!url || !channel || !description) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -27,7 +27,8 @@ export async function POST(req: NextRequest) {
       campaign_name,
       campaign_date,
       cohort,
-      ab_variant
+      ab_variant,
+      affiliate_name
     )
 
     // Validate medium is from approved list

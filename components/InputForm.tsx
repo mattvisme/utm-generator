@@ -54,8 +54,11 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
   const [createdById, setCreatedById] = useState(initialData?.created_by_id || '')
   const [createdByName, setCreatedByName] = useState(initialData?.created_by_name || '')
 
+  const [affiliateName, setAffiliateName] = useState(initialData?.affiliate_name || '')
+
   const isPPC = PPC_CHANNELS.includes(channel as Channel)
   const showCohort = COHORT_CHANNELS.includes(channel as Channel)
+  const isAffiliate = channel === 'Affiliate / Partner'
 
   // Fetch user list once on mount
   useEffect(() => {
@@ -78,6 +81,10 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
   useEffect(() => {
     if (!showCohort) setCohort('')
   }, [showCohort])
+
+  useEffect(() => {
+    if (!isAffiliate) setAffiliateName('')
+  }, [isAffiliate])
 
   useEffect(() => {
     if (!isAbTest) { setAbPreset(''); setAbCustom('') }
@@ -127,11 +134,12 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
       ab_variant: abVariant,
       created_by_id: createdById,
       created_by_name: createdByName,
+      affiliate_name: affiliateName,
       cleanUrl: base,
     })
   }
 
-  const isValid = url && channel && channel !== '-- Select a channel --' && description && createdById && !urlError
+  const isValid = url && channel && channel !== '-- Select a channel --' && description && createdById && !urlError && (!isAffiliate || affiliateName)
 
   const fieldLabel = (text: string, optional = false) => (
     <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.375rem' }}>
@@ -214,6 +222,30 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
           </div>
         )}
       </div>
+
+      {/* Affiliate name — conditional on Affiliate / Partner channel */}
+      {isAffiliate && (
+        <div>
+          {fieldLabel('Affiliate / Partner Name')}
+          <input
+            id="affiliate_name"
+            type="text"
+            className="input-field"
+            placeholder="e.g. John Smith or buffer"
+            value={affiliateName}
+            onChange={(e) =>
+              setAffiliateName(
+                e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '_').replace(/_+/g, '_')
+              )
+            }
+            disabled={loading}
+            required
+          />
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem', marginTop: '0.375rem', fontFamily: 'Lato, sans-serif' }}>
+            Sets <code style={{ background: '#f0f0f0', padding: '1px 4px', borderRadius: '3px' }}>utm_source=affiliate_{affiliateName || 'name'}</code>
+          </p>
+        </div>
+      )}
 
       {/* Description */}
       <div>
