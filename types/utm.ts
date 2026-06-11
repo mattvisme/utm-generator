@@ -56,7 +56,6 @@ export interface SaveRequest {
   ga4_setup_required: boolean
   ga4_setup_reason: string | null
   reasoning: string
-  url_short?: string
   created_by_id?: string
   created_by_name?: string
 }
@@ -79,7 +78,6 @@ export interface FormData {
   cohort: string          // "managed" | "unmanaged" | ""
   is_ab_test: boolean
   ab_variant: string      // "a" | "b" | "c" | custom
-  custom_slug: string     // optional Rebrandly slug for social channels
   created_by_id: string
   created_by_name: string
   affiliate_name: string  // normalised to lowercase_underscores
@@ -112,12 +110,6 @@ export const PPC_CHANNELS: Channel[] = [
 export const COHORT_CHANNELS: Channel[] = [
   'Email / Newsletter',
   'Product Feature',
-]
-
-// Channels where links are auto-shortened via Rebrandly
-export const SHORTLINK_CHANNELS: Channel[] = [
-  'Organic Social',
-  'Paid Social',
 ]
 
 export const APPROVED_MEDIUMS = [

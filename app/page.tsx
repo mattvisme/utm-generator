@@ -5,7 +5,7 @@ import Header from '@/components/Header'
 import InputForm from '@/components/InputForm'
 import UTMResult from '@/components/UTMResult'
 import SuccessState from '@/components/SuccessState'
-import { AppState, FormData, GenerateResponse, SHORTLINK_CHANNELS, Channel } from '@/types/utm'
+import { AppState, FormData, GenerateResponse } from '@/types/utm'
 
 export default function HomePage() {
   const [appState, setAppState] = useState<AppState>('input')
@@ -16,9 +16,6 @@ export default function HomePage() {
   const [approving, setApproving] = useState(false)
   const [saveError, setSaveError] = useState('')
   const [notionUrl, setNotionUrl] = useState('')
-  const [shortUrl, setShortUrl] = useState('')
-  const [shortening, setShortening] = useState(false)
-  const [shortenError, setShortenError] = useState('')
 
   const handleGenerate = async (data: FormData & { cleanUrl: string }) => {
     setFormData(data)
@@ -42,35 +39,13 @@ export default function HomePage() {
           affiliate_name: data.affiliate_name || undefined,
         }),
       })
-      const json: GenerateResponse = await res.json()
+      const json = await res.json()
       if (!res.ok) {
-        setGenerateError((json as { error?: string }).error || 'Something went wrong generating UTMs. Please try again.')
+        setGenerateError(json.error || 'Something went wrong generating UTMs. Please try again.')
         return
       }
       setGenerateResult(json)
       setAppState('result')
-
-      // Auto-shorten for social channels — runs in background, doesn't block the result screen
-      if (SHORTLINK_CHANNELS.includes(data.channel as Channel)) {
-        setShortening(true)
-        setShortUrl('')
-        setShortenError('')
-        fetch('/api/shorten', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            url: json.final_url,
-            slug: data.custom_slug || undefined,
-          }),
-        })
-          .then(r => r.json())
-          .then((sj: { short_url?: string; error?: string }) => {
-            if (sj.short_url) setShortUrl(sj.short_url)
-            else setShortenError(sj.error || 'Could not create short link.')
-          })
-          .catch(() => setShortenError('Could not create short link.'))
-          .finally(() => setShortening(false))
-      }
     } catch {
       setGenerateError('Something went wrong generating UTMs. Please try again.')
     } finally {
@@ -90,7 +65,6 @@ export default function HomePage() {
         body: JSON.stringify({
           url_original: formData.cleanUrl,
           url_with_utm: final_url,
-          url_short: shortUrl || undefined,
           description: formData.description,
           channel: formData.channel,
           utm_source: suggestion.utm_source,
@@ -123,8 +97,6 @@ export default function HomePage() {
   const handleReject = () => {
     setGenerateResult(null)
     setGenerateError('')
-    setShortUrl('')
-    setShortenError('')
     setAppState('input')
   }
 
@@ -134,8 +106,6 @@ export default function HomePage() {
     setGenerateError('')
     setSaveError('')
     setNotionUrl('')
-    setShortUrl('')
-    setShortenError('')
     setAppState('input')
   }
 
@@ -232,9 +202,6 @@ export default function HomePage() {
                 onApprove={handleApprove}
                 onReject={handleReject}
                 approving={approving}
-                shortUrl={shortUrl}
-                shortening={shortening}
-                shortenError={shortenError}
               />
 
               {saveError && (
@@ -270,7 +237,6 @@ export default function HomePage() {
                 result={generateResult}
                 onReset={handleReset}
                 notionUrl={notionUrl}
-                shortUrl={shortUrl}
               />
             </div>
           )}

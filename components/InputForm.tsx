@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { FormData, NotionUser, CHANNELS, PPC_CHANNELS, COHORT_CHANNELS, SHORTLINK_CHANNELS, MONTHS, Channel } from '@/types/utm'
+import { FormData, NotionUser, CHANNELS, PPC_CHANNELS, COHORT_CHANNELS, MONTHS, Channel } from '@/types/utm'
 import { isVismeUrl, stripUtmParams } from '@/lib/utm-utils'
 import PPCWarning from './PPCWarning'
 import LoadingSpinner from './LoadingSpinner'
@@ -38,7 +38,6 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
   const [campaignMonth, setCampaignMonth] = useState(initialData?.campaign_month || '')
   const [campaignYear, setCampaignYear] = useState(initialData?.campaign_year || String(currentYear))
   const [cohort, setCohort] = useState(initialData?.cohort || '')
-  const [customSlug, setCustomSlug] = useState(initialData?.custom_slug || '')
   const [isAbTest, setIsAbTest] = useState(initialData?.is_ab_test || false)
   // Separate preset (a/b/c) and custom label so switching between them never
   // leaves stale text in the custom input
@@ -58,7 +57,6 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
   const [affiliateName, setAffiliateName] = useState(initialData?.affiliate_name || '')
 
   const isPPC = PPC_CHANNELS.includes(channel as Channel)
-  const isSocial = SHORTLINK_CHANNELS.includes(channel as Channel)
   const showCohort = COHORT_CHANNELS.includes(channel as Channel)
   const isAffiliate = channel === 'Affiliate / Partner'
 
@@ -83,10 +81,6 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
   useEffect(() => {
     if (!showCohort) setCohort('')
   }, [showCohort])
-
-  useEffect(() => {
-    if (!isSocial) setCustomSlug('')
-  }, [isSocial])
 
   useEffect(() => {
     if (!isAffiliate) setAffiliateName('')
@@ -138,7 +132,6 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
       cohort,
       is_ab_test: isAbTest,
       ab_variant: abVariant,
-      custom_slug: customSlug,
       created_by_id: createdById,
       created_by_name: createdByName,
       affiliate_name: affiliateName,
@@ -416,31 +409,6 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
           />
           <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem', marginTop: '0.375rem', fontFamily: 'Lato, sans-serif' }}>
             Visme&apos;s custom PPC tracking value. Leave blank if not applicable.
-          </p>
-        </div>
-      )}
-
-      {/* Short link slug — social channels only */}
-      {isSocial && (
-        <div>
-          {fieldLabel('Short link slug', true)}
-          <input
-            type="text"
-            className="input-field"
-            placeholder="e.g. linkedin-spring-promo"
-            value={customSlug}
-            onChange={(e) =>
-              setCustomSlug(
-                e.target.value
-                  .toLowerCase()
-                  .replace(/[^a-z0-9-]/g, '-')
-                  .replace(/-+/g, '-')
-              )
-            }
-            disabled={loading}
-          />
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem', marginTop: '0.375rem', fontFamily: 'Lato, sans-serif' }}>
-            Lowercase and hyphens only. Leave blank to auto-generate from your campaign name.
           </p>
         </div>
       )}

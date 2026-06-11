@@ -11,14 +11,10 @@ interface Props {
   onApprove: () => void
   onReject: () => void
   approving: boolean
-  shortUrl?: string
-  shortening?: boolean
-  shortenError?: string
 }
 
-export default function UTMResult({ result, formData, onApprove, onReject, approving, shortUrl, shortening, shortenError }: Props) {
+export default function UTMResult({ result, formData, onApprove, onReject, approving }: Props) {
   const [copied, setCopied] = useState(false)
-  const [copiedShort, setCopiedShort] = useState(false)
   const [reasoningOpen, setReasoningOpen] = useState(false)
   const { suggestion, final_url, truncated_campaign, similar_existing } = result
   const isPPC = PPC_CHANNELS.includes(formData.channel as Channel)
@@ -27,13 +23,6 @@ export default function UTMResult({ result, formData, onApprove, onReject, appro
     await navigator.clipboard.writeText(final_url)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
-  }
-
-  const copyShort = async () => {
-    if (!shortUrl) return
-    await navigator.clipboard.writeText(shortUrl)
-    setCopiedShort(true)
-    setTimeout(() => setCopiedShort(false), 2000)
   }
 
   const params = [
@@ -145,7 +134,7 @@ export default function UTMResult({ result, formData, onApprove, onReject, appro
             background: '#f5f9fc',
           }}
         >
-          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'Lato, sans-serif', marginBottom: '0.5rem' }}>Full URL</p>
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'Lato, sans-serif', marginBottom: '0.5rem' }}>Final URL</p>
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
             <code
               style={{
@@ -172,58 +161,6 @@ export default function UTMResult({ result, formData, onApprove, onReject, appro
             </button>
           </div>
         </div>
-
-        {/* Short URL — social channels */}
-        {(shortening || shortUrl || shortenError) && (
-          <div
-            style={{
-              borderTop: '1px solid var(--border-light)',
-              padding: '1rem 1.5rem',
-              background: '#f0f7ff',
-            }}
-          >
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'Lato, sans-serif', marginBottom: '0.5rem' }}>
-              Short URL <span style={{ color: 'var(--text-dim)', fontWeight: 400 }}>(for social)</span>
-            </p>
-            {shortening && (
-              <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', fontFamily: 'Lato, sans-serif' }}>
-                Creating short link…
-              </p>
-            )}
-            {shortUrl && !shortening && (
-              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-                <code
-                  style={{
-                    flex: 1,
-                    background: 'var(--surface)',
-                    border: '1px solid var(--border-light)',
-                    borderRadius: 'var(--radius-sm)',
-                    padding: '0.625rem 0.875rem',
-                    fontSize: '0.8125rem',
-                    color: 'var(--text)',
-                    wordBreak: 'break-all',
-                    lineHeight: '1.5',
-                    display: 'block',
-                  }}
-                >
-                  {shortUrl}
-                </code>
-                <button
-                  onClick={copyShort}
-                  className="btn-secondary"
-                  style={{ padding: '0.625rem 1rem', fontSize: '0.8125rem', whiteSpace: 'nowrap', flexShrink: 0 }}
-                >
-                  {copiedShort ? 'Copied ✓' : 'Copy'}
-                </button>
-              </div>
-            )}
-            {shortenError && !shortening && (
-              <p style={{ fontSize: '0.8125rem', color: '#92400E', fontFamily: 'Lato, sans-serif' }}>
-                ⚠️ {shortenError}
-              </p>
-            )}
-          </div>
-        )}
       </div>
 
       {/* GA4 warning banner */}

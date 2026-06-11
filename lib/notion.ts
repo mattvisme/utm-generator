@@ -29,7 +29,6 @@ export async function saveUTMRecord(data: SaveRequest): Promise<string> {
       },
       'URL (Original)': { url: data.url_original },
       'URL (With UTMs)': { url: data.url_with_utm },
-      ...(data.url_short ? { 'URL (Short)': { url: data.url_short } } : {}),
       Description: {
         rich_text: [{ text: { content: data.description } }],
       },
