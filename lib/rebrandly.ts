@@ -17,9 +17,10 @@ export async function shortenUrl(url: string, slug?: string): Promise<string> {
     body: JSON.stringify(body),
   })
 
-  if (res.status === 409) throw new Error('slug_conflict')
   if (!res.ok) {
     const text = await res.text()
+    // Rebrandly returns 403 with AlreadyExists for duplicate slugs
+    if (text.includes('AlreadyExists')) throw new Error('slug_conflict')
     throw new Error(`Rebrandly error ${res.status}: ${text}`)
   }
 
