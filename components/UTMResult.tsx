@@ -191,8 +191,8 @@ export default function UTMResult({ result, formData, onApprove, onReject, appro
         )}
       </div>
 
-      {/* GA4 warning banner */}
-      {suggestion.ga4_setup_required && (
+      {/* GA4 warning banner — only show when the medium itself is non-standard */}
+      {suggestion.ga4_setup_required && !['social', 'paid_social', 'cpc', 'email', 'referral', 'affiliate', 'display'].includes(suggestion.utm_medium) && (
         <div
           style={{
             background: '#FFFBEB',
@@ -207,11 +207,15 @@ export default function UTMResult({ result, formData, onApprove, onReject, appro
         >
           <p style={{ fontWeight: 700, marginBottom: '0.25rem' }}>⚠️ Non-standard GA4 channel</p>
           <p>
-            <code style={{ background: 'rgba(0,0,0,0.08)', borderRadius: '3px', padding: '1px 4px' }}>
-              utm_medium={suggestion.utm_medium}
-            </code>{' '}
-            is not a GA4 default channel. Traffic will appear under <strong>Unassigned</strong> in channel reports.
-            You can still filter by <code style={{ background: 'rgba(0,0,0,0.08)', borderRadius: '3px', padding: '1px 4px' }}>utm_medium = {suggestion.utm_medium}</code> in GA4 Explorations to analyse performance.
+            {suggestion.ga4_setup_reason || (
+              <>
+                <code style={{ background: 'rgba(0,0,0,0.08)', borderRadius: '3px', padding: '1px 4px' }}>
+                  utm_medium={suggestion.utm_medium}
+                </code>{' '}
+                is not a GA4 default channel. Traffic will appear under <strong>Unassigned</strong> in channel reports.
+                You can still filter by <code style={{ background: 'rgba(0,0,0,0.08)', borderRadius: '3px', padding: '1px 4px' }}>utm_medium = {suggestion.utm_medium}</code> in GA4 Explorations to analyse performance.
+              </>
+            )}
           </p>
         </div>
       )}
