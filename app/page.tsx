@@ -16,7 +16,8 @@ export default function HomePage() {
   const [approving, setApproving] = useState(false)
   const [saveError, setSaveError] = useState('')
   const [notionUrl, setNotionUrl] = useState('')
-  const [shortUrl, setShortUrl] = useState('')
+  const [shortUrl, setShortUrl] = useState('')        // preview URL shown on result screen
+  const [shortSlug, setShortSlug] = useState<string | null>(null) // slug to create on approve
   const [shortening, setShortening] = useState(false)
   const [shortenError, setShortenError] = useState('')
 
@@ -49,15 +50,17 @@ export default function HomePage() {
       }
       setGenerateResult(json)
       setAppState('result')
-      // Kick off shortening in the background for social channels
+      // Check slug availability in the background for social channels (does NOT create the link yet)
       if (SHORTLINK_CHANNELS.includes(data.channel as Channel)) {
         setShortUrl('')
+        setShortSlug(null)
         setShortenError('')
         setShortening(true)
         fetch('/api/shorten', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            action: 'check',
             url: json.final_url,
             custom_slug: data.custom_slug || undefined,
             utm_source: json.suggestion.utm_source,
@@ -66,13 +69,14 @@ export default function HomePage() {
         })
           .then((r) => r.json())
           .then((sj) => {
-            if (sj.short_url) setShortUrl(sj.short_url)
-            else setShortenError(sj.error || 'Could not create short link.')
+            if (sj.short_url) { setShortUrl(sj.short_url); setShortSlug(sj.slug ?? null) }
+            else setShortenError(sj.error || 'Could not check short link availability.')
           })
-          .catch(() => setShortenError('Could not create short link.'))
+          .catch(() => setShortenError('Could not check short link availability.'))
           .finally(() => setShortening(false))
       } else {
         setShortUrl('')
+        setShortSlug(null)
         setShortenError('')
       }
     } catch {
@@ -88,6 +92,23 @@ export default function HomePage() {
     setSaveError('')
     try {
       const { suggestion, final_url } = generateResult
+
+      // Create the Rebrandly link now that the user has approved
+      let confirmedShortUrl = ''
+      if (shortUrl && SHORTLINK_CHANNELS.includes(formData.channel as Channel)) {
+        try {
+          const sr = await fetch('/api/shorten', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'create', url: final_url, slug: shortSlug }),
+          })
+          const sj = await sr.json()
+          if (sj.short_url) confirmedShortUrl = sj.short_url
+        } catch {
+          // Non-fatal — save proceeds without the short URL
+        }
+      }
+
       const res = await fetch('/api/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -107,7 +128,7 @@ export default function HomePage() {
           reasoning: suggestion.reasoning,
           created_by_id: formData.created_by_id || undefined,
           created_by_name: formData.created_by_name || undefined,
-          url_short: shortUrl || undefined,
+          url_short: confirmedShortUrl || undefined,
         }),
       })
       const json = await res.json()
@@ -116,6 +137,7 @@ export default function HomePage() {
         return
       }
       setNotionUrl(json.notion_url)
+      if (confirmedShortUrl) setShortUrl(confirmedShortUrl)
       setAppState('success')
     } catch {
       setSaveError('Could not save to Notion. Copy your URL now.')
@@ -128,6 +150,7 @@ export default function HomePage() {
     setGenerateResult(null)
     setGenerateError('')
     setShortUrl('')
+    setShortSlug(null)
     setShortenError('')
     setAppState('input')
   }
@@ -139,6 +162,7 @@ export default function HomePage() {
     setSaveError('')
     setNotionUrl('')
     setShortUrl('')
+    setShortSlug(null)
     setShortenError('')
     setAppState('input')
   }
