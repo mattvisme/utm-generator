@@ -7,7 +7,7 @@ import { GenerateRequest, APPROVED_MEDIUMS, APPROVED_SOURCES } from '@/types/utm
 export async function POST(req: NextRequest) {
   try {
     const body: GenerateRequest = await req.json()
-    const { url, channel, description, vc_parameter, campaign_name, campaign_date, cohort, ab_variant, affiliate_name } = body
+    const { url, channel, description, vc_parameter, campaign_name, campaign_date, cohort, ab_variant, affiliate_name, social_platform } = body
 
     if (!url || !channel || !description) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -28,8 +28,14 @@ export async function POST(req: NextRequest) {
       campaign_date,
       cohort,
       ab_variant,
-      affiliate_name
+      affiliate_name,
+      social_platform
     )
+
+    // If a social platform was provided, enforce it as utm_source regardless of what Claude returned
+    if (social_platform) {
+      suggestion.utm_source = social_platform.toLowerCase().trim()
+    }
 
     // Validate medium is from approved list
     if (!(APPROVED_MEDIUMS as readonly string[]).includes(suggestion.utm_medium)) {

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { FormData, NotionUser, CHANNELS, PPC_CHANNELS, COHORT_CHANNELS, SHORTLINK_CHANNELS, MONTHS, Channel } from '@/types/utm'
+import { FormData, NotionUser, CHANNELS, PPC_CHANNELS, COHORT_CHANNELS, SHORTLINK_CHANNELS, SOCIAL_PLATFORMS, MONTHS, Channel } from '@/types/utm'
 import { isVismeUrl, stripUtmParams } from '@/lib/utm-utils'
 import PPCWarning from './PPCWarning'
 import LoadingSpinner from './LoadingSpinner'
@@ -56,6 +56,7 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
 
   const [affiliateName, setAffiliateName] = useState(initialData?.affiliate_name || '')
   const [customSlug, setCustomSlug] = useState(initialData?.custom_slug || '')
+  const [socialPlatform, setSocialPlatform] = useState(initialData?.social_platform || '')
 
   const isPPC = PPC_CHANNELS.includes(channel as Channel)
   const showCohort = COHORT_CHANNELS.includes(channel as Channel)
@@ -89,7 +90,7 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
   }, [isAffiliate])
 
   useEffect(() => {
-    if (!isSocial) setCustomSlug('')
+    if (!isSocial) { setCustomSlug(''); setSocialPlatform('') }
   }, [isSocial])
 
   useEffect(() => {
@@ -142,11 +143,12 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
       created_by_name: createdByName,
       affiliate_name: affiliateName,
       custom_slug: customSlug,
+      social_platform: socialPlatform,
       cleanUrl: base,
     })
   }
 
-  const isValid = url && channel && channel !== '-- Select a channel --' && description && createdById && !urlError && (!isAffiliate || affiliateName)
+  const isValid = url && channel && channel !== '-- Select a channel --' && description && createdById && !urlError && (!isAffiliate || affiliateName) && (!isSocial || socialPlatform)
 
   const fieldLabel = (text: string, optional = false) => (
     <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.375rem' }}>
@@ -229,6 +231,26 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
           </div>
         )}
       </div>
+
+      {/* Social platform — required for Organic Social and Paid Social */}
+      {isSocial && (
+        <div>
+          {fieldLabel('Platform')}
+          <select
+            className="input-field"
+            value={socialPlatform}
+            onChange={(e) => setSocialPlatform(e.target.value)}
+            disabled={loading}
+            required
+            style={{ cursor: 'pointer' }}
+          >
+            <option value="">-- Select platform --</option>
+            {SOCIAL_PLATFORMS.map((p) => (
+              <option key={p.value} value={p.value}>{p.label}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* Affiliate name — conditional on Affiliate / Partner channel */}
       {isAffiliate && (

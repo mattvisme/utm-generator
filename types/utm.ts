@@ -29,6 +29,7 @@ export interface GenerateRequest {
   cohort?: 'managed' | 'unmanaged'
   ab_variant?: string      // e.g. "a", "b", "c", or custom label
   affiliate_name?: string  // e.g. "john_smith" → utm_source=affiliate_john_smith
+  social_platform?: string // e.g. "linkedin" — forces utm_source for social channels
 }
 
 export interface GenerateResponse {
@@ -83,6 +84,7 @@ export interface FormData {
   created_by_name: string
   affiliate_name: string  // normalised to lowercase_underscores
   custom_slug: string     // optional Rebrandly slug override
+  social_platform: string // platform selected for social channels
 }
 
 export const CHANNELS = [
@@ -144,12 +146,27 @@ export const APPROVED_SOURCES = [
   'exported_pdf',
   'visme_app',
   'blog',
+  'pinterest',
+  'threads',
 ] as const
 
 export type ApprovedSource = (typeof APPROVED_SOURCES)[number]
 
 // Channels that get a Rebrandly short link
 export const SHORTLINK_CHANNELS: Channel[] = ['Organic Social', 'Paid Social']
+
+export const SOCIAL_PLATFORMS = [
+  { label: 'LinkedIn',    value: 'linkedin'  },
+  { label: 'Facebook',    value: 'facebook'  },
+  { label: 'Instagram',   value: 'instagram' },
+  { label: 'X / Twitter', value: 'twitter'   },
+  { label: 'TikTok',      value: 'tiktok'    },
+  { label: 'YouTube',     value: 'youtube'   },
+  { label: 'Pinterest',   value: 'pinterest' },
+  { label: 'Threads',     value: 'threads'   },
+] as const
+
+export type SocialPlatform = (typeof SOCIAL_PLATFORMS)[number]['value']
 
 export const MONTHS = [
   { value: '01', label: 'Jan' },
