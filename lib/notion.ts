@@ -62,6 +62,7 @@ export async function saveUTMRecord(data: SaveRequest): Promise<string> {
       // Only set Created By when we have a valid Notion user ID — the column is
       // typed as PERSON and will reject a rich_text fallback with a 400 error.
       ...(data.created_by_id ? { 'Created By': { people: [{ id: data.created_by_id }] } } : {}),
+      ...(data.url_short ? { 'URL (Short)': { url: data.url_short } } : {}),
     },
   })
 

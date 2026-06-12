@@ -9,16 +9,25 @@ interface Props {
   result: GenerateResponse
   onReset: () => void
   notionUrl?: string
+  shortUrl?: string
 }
 
-export default function SuccessState({ result, onReset, notionUrl }: Props) {
+export default function SuccessState({ result, onReset, notionUrl, shortUrl }: Props) {
   const [copied, setCopied] = useState(false)
+  const [copiedShort, setCopiedShort] = useState(false)
   const { suggestion, final_url } = result
 
   const copy = async () => {
     await navigator.clipboard.writeText(final_url)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  const copyShort = async () => {
+    if (!shortUrl) return
+    await navigator.clipboard.writeText(shortUrl)
+    setCopiedShort(true)
+    setTimeout(() => setCopiedShort(false), 2000)
   }
 
   const badges = [
@@ -89,6 +98,39 @@ export default function SuccessState({ result, onReset, notionUrl }: Props) {
           </button>
         </div>
       </div>
+
+      {/* Short URL */}
+      {shortUrl && (
+        <div style={{ margin: '0 0 1.25rem', textAlign: 'left' }}>
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'Lato, sans-serif', marginBottom: '0.5rem' }}>Short URL</p>
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+            <code
+              style={{
+                flex: 1,
+                background: '#f0f7ff',
+                border: '1px solid var(--border-light)',
+                borderRadius: 'var(--radius-sm)',
+                padding: '0.625rem 0.875rem',
+                fontSize: '0.8125rem',
+                color: 'var(--text)',
+                wordBreak: 'break-all',
+                lineHeight: '1.5',
+                display: 'block',
+                textAlign: 'left',
+              }}
+            >
+              {shortUrl}
+            </code>
+            <button
+              onClick={copyShort}
+              className="btn-secondary"
+              style={{ padding: '0.625rem 1rem', fontSize: '0.8125rem', whiteSpace: 'nowrap', flexShrink: 0 }}
+            >
+              {copiedShort ? 'Copied ✓' : 'Copy'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Badges */}
       <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '1.5rem' }}>

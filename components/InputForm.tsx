@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { FormData, NotionUser, CHANNELS, PPC_CHANNELS, COHORT_CHANNELS, MONTHS, Channel } from '@/types/utm'
+import { FormData, NotionUser, CHANNELS, PPC_CHANNELS, COHORT_CHANNELS, SHORTLINK_CHANNELS, MONTHS, Channel } from '@/types/utm'
 import { isVismeUrl, stripUtmParams } from '@/lib/utm-utils'
 import PPCWarning from './PPCWarning'
 import LoadingSpinner from './LoadingSpinner'
@@ -55,10 +55,12 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
   const [createdByName, setCreatedByName] = useState(initialData?.created_by_name || '')
 
   const [affiliateName, setAffiliateName] = useState(initialData?.affiliate_name || '')
+  const [customSlug, setCustomSlug] = useState(initialData?.custom_slug || '')
 
   const isPPC = PPC_CHANNELS.includes(channel as Channel)
   const showCohort = COHORT_CHANNELS.includes(channel as Channel)
   const isAffiliate = channel === 'Affiliate / Partner'
+  const isSocial = SHORTLINK_CHANNELS.includes(channel as Channel)
 
   // Fetch user list once on mount
   useEffect(() => {
@@ -85,6 +87,10 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
   useEffect(() => {
     if (!isAffiliate) setAffiliateName('')
   }, [isAffiliate])
+
+  useEffect(() => {
+    if (!isSocial) setCustomSlug('')
+  }, [isSocial])
 
   useEffect(() => {
     if (!isAbTest) { setAbPreset(''); setAbCustom('') }
@@ -135,6 +141,7 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
       created_by_id: createdById,
       created_by_name: createdByName,
       affiliate_name: affiliateName,
+      custom_slug: customSlug,
       cleanUrl: base,
     })
   }
@@ -390,6 +397,29 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
           </div>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem', marginTop: '0.375rem', fontFamily: 'Lato, sans-serif' }}>
             Whether this link targets managed or unmanaged accounts.
+          </p>
+        </div>
+      )}
+
+      {/* Custom slug (social channels only) */}
+      {isSocial && (
+        <div>
+          {fieldLabel('Short Link Slug', true)}
+          <input
+            id="custom_slug"
+            type="text"
+            className="input-field"
+            placeholder="e.g. infographic-guide (leave blank for auto)"
+            value={customSlug}
+            onChange={(e) =>
+              setCustomSlug(
+                e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-')
+              )
+            }
+            disabled={loading}
+          />
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem', marginTop: '0.375rem', fontFamily: 'Lato, sans-serif' }}>
+            Optional custom slug for the Rebrandly short link. Leave blank to generate one automatically.
           </p>
         </div>
       )}

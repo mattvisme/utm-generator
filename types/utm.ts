@@ -58,6 +58,7 @@ export interface SaveRequest {
   reasoning: string
   created_by_id?: string
   created_by_name?: string
+  url_short?: string
 }
 
 export interface SaveResponse {
@@ -81,6 +82,7 @@ export interface FormData {
   created_by_id: string
   created_by_name: string
   affiliate_name: string  // normalised to lowercase_underscores
+  custom_slug: string     // optional Rebrandly slug override
 }
 
 export const CHANNELS = [
@@ -145,6 +147,9 @@ export const APPROVED_SOURCES = [
 ] as const
 
 export type ApprovedSource = (typeof APPROVED_SOURCES)[number]
+
+// Channels that get a Rebrandly short link
+export const SHORTLINK_CHANNELS: Channel[] = ['Organic Social', 'Paid Social']
 
 export const MONTHS = [
   { value: '01', label: 'Jan' },
