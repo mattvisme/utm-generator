@@ -148,6 +148,9 @@ export const APPROVED_SOURCES = [
   'blog',
   'pinterest',
   'threads',
+  'reddit',
+  'snapchat',
+  'whatsapp',
 ] as const
 
 export type ApprovedSource = (typeof APPROVED_SOURCES)[number]
@@ -164,6 +167,9 @@ export const SOCIAL_PLATFORMS = [
   { label: 'YouTube',     value: 'youtube'   },
   { label: 'Pinterest',   value: 'pinterest' },
   { label: 'Threads',     value: 'threads'   },
+  { label: 'Reddit',      value: 'reddit'    },
+  { label: 'Snapchat',    value: 'snapchat'  },
+  { label: 'WhatsApp',    value: 'whatsapp'  },
 ] as const
 
 export type SocialPlatform = (typeof SOCIAL_PLATFORMS)[number]['value']
