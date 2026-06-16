@@ -195,27 +195,32 @@ export default function UTMResult({ result, formData, onApprove, onReject, appro
       {suggestion.ga4_setup_required && !['social', 'paid_social', 'cpc', 'email', 'referral', 'affiliate', 'display'].includes(suggestion.utm_medium) && (
         <div
           style={{
-            background: '#FFFBEB',
-            border: '1px solid #FDE68A',
+            background: suggestion.utm_medium === 'paid_ai' ? '#EFF6FF' : '#FFFBEB',
+            border: `1px solid ${suggestion.utm_medium === 'paid_ai' ? '#BFDBFE' : '#FDE68A'}`,
             borderRadius: 'var(--radius-sm)',
             padding: '0.875rem 1rem',
-            color: '#92400E',
+            color: suggestion.utm_medium === 'paid_ai' ? '#1E40AF' : '#92400E',
             fontFamily: 'Lato, sans-serif',
             fontSize: '0.875rem',
             lineHeight: '1.5',
           }}
         >
-          <p style={{ fontWeight: 700, marginBottom: '0.25rem' }}>⚠️ Non-standard GA4 channel</p>
+          <p style={{ fontWeight: 700, marginBottom: '0.25rem' }}>
+            {suggestion.utm_medium === 'paid_ai' ? 'ℹ️ Interim GA4 channel' : '⚠️ Non-standard GA4 channel'}
+          </p>
           <p>
-            {suggestion.ga4_setup_reason || (
-              <>
-                <code style={{ background: 'rgba(0,0,0,0.08)', borderRadius: '3px', padding: '1px 4px' }}>
-                  utm_medium={suggestion.utm_medium}
-                </code>{' '}
-                is not a GA4 default channel. Traffic will appear under <strong>Unassigned</strong> in channel reports.
-                You can still filter by <code style={{ background: 'rgba(0,0,0,0.08)', borderRadius: '3px', padding: '1px 4px' }}>utm_medium = {suggestion.utm_medium}</code> in GA4 Explorations to analyse performance.
-              </>
-            )}
+            {suggestion.utm_medium === 'paid_ai'
+              ? 'paid_ai is an interim medium for OpenAI/ChatGPT paid placements. GA4 will report this as Unassigned until Google publishes an official AI Ads channel grouping. This is deliberate — do not change to cpc or display.'
+              : suggestion.ga4_setup_reason || (
+                <>
+                  <code style={{ background: 'rgba(0,0,0,0.08)', borderRadius: '3px', padding: '1px 4px' }}>
+                    utm_medium={suggestion.utm_medium}
+                  </code>{' '}
+                  is not a GA4 default channel. Traffic will appear under <strong>Unassigned</strong> in channel reports.
+                  You can still filter by <code style={{ background: 'rgba(0,0,0,0.08)', borderRadius: '3px', padding: '1px 4px' }}>utm_medium = {suggestion.utm_medium}</code> in GA4 Explorations to analyse performance.
+                </>
+              )
+            }
           </p>
         </div>
       )}

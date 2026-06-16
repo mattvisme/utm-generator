@@ -100,6 +100,7 @@ export const CHANNELS = [
   'Product Feature',
   'Blog / On-site CTA',
   'Exported PDF / Watermark',
+  'AI Ads (ChatGPT)',
   'Other',
 ] as const
 
@@ -128,6 +129,17 @@ export const APPROVED_MEDIUMS = [
   'internal',
 ] as const
 
+// Interim medium for OpenAI/ChatGPT paid placements.
+// Deliberately excluded from APPROVED_MEDIUMS — not yet a GA4-ratified value.
+// GA4 will report this as "Unassigned" until an official AI Ads channel grouping
+// is published. When that happens, remap here and in lib/claude.ts.
+// Decision made: June 2026. Revisit when GA4 publishes official spec.
+export const INTERIM_AI_AD_MEDIUMS = ['paid_ai'] as const
+
+// Paired source for OpenAI ad placements.
+// Expand this list if OpenAI introduces distinct named placements.
+export const OPENAI_AD_SOURCES = ['chatgpt'] as const
+
 export type ApprovedMedium = (typeof APPROVED_MEDIUMS)[number]
 
 // Approved utm_source base values. affiliate_[partner] is also valid (checked by regex).
@@ -151,6 +163,8 @@ export const APPROVED_SOURCES = [
   'reddit',
   'snapchat',
   'whatsapp',
+  'openai',
+  'chatgpt',
 ] as const
 
 export type ApprovedSource = (typeof APPROVED_SOURCES)[number]

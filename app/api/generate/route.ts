@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { generateUTMs } from '@/lib/claude'
 import { findSimilarRecord } from '@/lib/notion'
 import { isVismeUrl, stripUtmParams, buildFinalUrl, truncateCampaign } from '@/lib/utm-utils'
-import { GenerateRequest, APPROVED_MEDIUMS, APPROVED_SOURCES } from '@/types/utm'
+import { GenerateRequest, APPROVED_MEDIUMS, APPROVED_SOURCES, INTERIM_AI_AD_MEDIUMS } from '@/types/utm'
 
 export async function POST(req: NextRequest) {
   try {
@@ -37,8 +37,9 @@ export async function POST(req: NextRequest) {
       suggestion.utm_source = social_platform.toLowerCase().trim()
     }
 
-    // Validate medium is from approved list
-    if (!(APPROVED_MEDIUMS as readonly string[]).includes(suggestion.utm_medium)) {
+    // Validate medium is from approved list (INTERIM_AI_AD_MEDIUMS also allowed)
+    const allValidMediums = [...APPROVED_MEDIUMS, ...INTERIM_AI_AD_MEDIUMS]
+    if (!(allValidMediums as string[]).includes(suggestion.utm_medium)) {
       console.error(`[generate] Invalid medium returned by LLM: "${suggestion.utm_medium}"`)
       return NextResponse.json(
         { error: `Generated an invalid utm_medium value: "${suggestion.utm_medium}". Please try again.` },
