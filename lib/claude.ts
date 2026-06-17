@@ -7,7 +7,7 @@ VISME CONTEXT:
 Visme helps users create presentations, infographics, reports, charts, and branded content. Customers include marketers, designers, educators, and enterprise teams. Key conversion goals are free trial signups and paid plan upgrades.
 
 APPROVED utm_source VALUES:
-google, bing, yandex, newsletter, email, linkedin, facebook, instagram, twitter, tiktok, youtube, exported_pdf, visme_app, blog, openai, affiliate_[partner_name]
+google, bing, yandex, newsletter, email, linkedin, facebook, instagram, twitter, tiktok, youtube, exported_pdf, visme_app, blog, affiliate_[partner_name]
 For affiliate, replace [partner_name] with the specific partner name in lowercase (e.g. affiliate_buffer, affiliate_zapier).
 For any other source not in this list, use the closest lowercase equivalent and set ga4_setup_required=true.
 
@@ -21,6 +21,7 @@ APPROVED utm_medium VALUES — use ONLY these exact strings. Do not invent new m
 - affiliate      → Affiliates
 - badge          → Custom (requires GA4 setup — set ga4_setup_required: true)
 - internal       → Custom on-site CTA (requires GA4 setup — set ga4_setup_required: true)
+- paid_ai        → Unassigned (interim — no native GA4 channel. Set ga4_setup_required: true)
 
 utm_campaign NAMING RULES:
 - Lowercase only. Underscores only. No hyphens, no spaces.
