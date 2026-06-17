@@ -94,13 +94,13 @@ export const CHANNELS = [
   'Paid Social',
   'Paid Search (Google Ads)',
   'Paid Search (Bing Ads)',
+  'Paid AI (OpenAI)',
   'Display',
   'Referral',
   'Affiliate / Partner',
   'Product Feature',
   'Blog / On-site CTA',
   'Exported PDF / Watermark',
-  'AI Ads (ChatGPT)',
   'Other',
 ] as const
 

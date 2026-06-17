@@ -65,7 +65,7 @@ CHANNEL RULES:
 - Product Feature (in-app link or in-product prompt): source=visme_app, medium=internal. Set ga4_setup_required=true with reason "utm_medium=internal requires a GA4 custom channel group."
 - Blog / On-site CTA (link within visme.co blog or website): source=blog, medium=internal. Set ga4_setup_required=true with reason "utm_medium=internal requires a GA4 custom channel group."
 - Exported PDF / Watermark (product watermark or badge on content exported from Visme): source=exported_pdf, medium=badge. Set ga4_setup_required=true with reason "utm_medium=badge requires a GA4 custom channel group."
-- AI Ads (ChatGPT): source=chatgpt, medium=paid_ai. Set ga4_setup_required=true with reason "paid_ai is an interim medium for OpenAI/ChatGPT paid placements. GA4 will report this as Unassigned until Google publishes an official AI Ads channel grouping. This is a deliberate decision — do not change to cpc or display. Revisit when GA4 spec is published."
+- Paid AI (OpenAI): source=chatgpt, medium=paid_ai. Set ga4_setup_required=true with reason "paid_ai is an interim medium for OpenAI/ChatGPT paid placements. GA4 will report this as Unassigned until Google publishes an official AI Ads channel grouping. This is a deliberate decision — do not change to cpc or display. Revisit when GA4 spec is published."
 - Other: use your best judgment from the description. If the medium is not in the approved list above, set ga4_setup_required=true and explain in ga4_setup_reason.
 
 RESERVED GA4 SYSTEM VALUES — never use:
