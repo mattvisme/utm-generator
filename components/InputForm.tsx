@@ -31,7 +31,7 @@ const toggleButtonStyle = (active: boolean) => ({
 
 export default function InputForm({ onSubmit, loading, initialData }: Props) {
   const [url, setUrl] = useState(initialData?.url || '')
-  const [channel, setChannel] = useState(initialData?.channel || '')
+  const [channel, setChannel] = useState(initialData?.channel || '-- Select a channel --')
   const [description, setDescription] = useState(initialData?.description || '')
   const [vcParam, setVcParam] = useState(initialData?.vc_parameter || '')
   const [campaignName, setCampaignName] = useState(initialData?.campaign_name || '')
@@ -235,7 +235,10 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
       {/* Social platform — required for Organic Social and Paid Social */}
       {isSocial && (
         <div>
-          {fieldLabel('Platform')}
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.375rem' }}>
+            <label className="label" style={{ margin: 0 }}>Platform</label>
+            <span style={{ color: '#DC2626' }}>*</span>
+          </div>
           <select
             className="input-field"
             value={socialPlatform}
@@ -249,6 +252,11 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
               <option key={p.value} value={p.value}>{p.label}</option>
             ))}
           </select>
+          {!socialPlatform && (
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem', marginTop: '0.375rem', fontFamily: 'Lato, sans-serif' }}>
+              Select a platform to enable the Generate button.
+            </p>
+          )}
         </div>
       )}
 
