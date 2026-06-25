@@ -7,11 +7,17 @@ VISME CONTEXT:
 Visme helps users create presentations, infographics, reports, charts, and branded content. Customers include marketers, designers, educators, and enterprise teams. Key conversion goals are free trial signups and paid plan upgrades.
 
 APPROVED utm_source VALUES:
-google, bing, yandex, newsletter, email, hubspot, instantly, linkedin, facebook, instagram, twitter, tiktok, youtube, exported_pdf, visme_app, blog, affiliate_[partner_name]
+google, bing, yandex, hubspot, instantly, visme_admin, linkedin, facebook, instagram, twitter, tiktok, youtube, exported_pdf, visme_app, blog, affiliate_[partner_name], chatgpt
 For affiliate, replace [partner_name] with the specific partner name in lowercase (e.g. affiliate_buffer, affiliate_zapier).
 For any other source not in this list, use the closest lowercase equivalent and set ga4_setup_required=true.
 
-For email sends, use the sending platform name as utm_source. GA4's Email channel classification is triggered entirely by utm_medium=email — the source value is not evaluated for channel assignment. Use "hubspot" for HubSpot marketing emails and "instantly" for cold outbound sent via Instantly. Any other sending platform should follow the same pattern: use the platform name in lowercase.
+IMPORTANT — legacy email sources "newsletter" and "email" are retired. Do not use them as utm_source values under any circumstances. They have been replaced by platform-specific sources (hubspot, instantly, visme_admin).
+
+For email sends, the approved sources are:
+- hubspot — HubSpot warm/marketing emails
+- instantly — cold outbound via Instantly
+- visme_admin — admin sends, legacy newsletter sends being sunset
+If the user describes an email send on a platform that is not one of these three, do not guess a source. Return an error in the reasoning field explaining that no approved source exists for that platform and that the user should contact Matt Strydom to get one added before generating the link. Set ga4_setup_required=true and ga4_setup_reason to the same message.
 
 APPROVED utm_medium VALUES — use ONLY these exact strings. Do not invent new medium values:
 - cpc            → Paid Search
@@ -52,10 +58,9 @@ vc_parameter: Only populate if a value is explicitly provided by the user. Other
 CHANNEL RULES:
 - Google Ads: source=google, medium=cpc. Set ppc_warning=true.
 - Bing Ads: source=bing, medium=cpc. Set ppc_warning=true.
-- Email newsletter: source=newsletter, medium=email
-- Transactional/automated email: source=email, medium=email
 - HubSpot warm/marketing email: source=hubspot, medium=email
 - Instantly cold outbound email: source=instantly, medium=email
+- Admin / newsletter (being sunset): source=visme_admin, medium=email
 Never use medium=newsletter. GA4's Email channel rule only recognises "email", "e-mail", "e_mail", and "e mail" as valid medium values for Email channel classification. medium=newsletter will land in Unassigned.
 - LinkedIn paid: source=linkedin, medium=paid_social
 - LinkedIn organic: source=linkedin, medium=social

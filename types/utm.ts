@@ -154,14 +154,14 @@ export const OPENAI_AD_SOURCES = ['chatgpt'] as const
 export type ApprovedMedium = (typeof APPROVED_MEDIUMS)[number]
 
 // Approved utm_source base values. affiliate_[partner] is also valid (checked by regex).
+// newsletter and email are legacy values — no longer presented as options; visme_admin replaces them for admin sends.
 export const APPROVED_SOURCES = [
   'google',
   'bing',
   'yandex',
-  'newsletter',
-  'email',
   'hubspot',
   'instantly',
+  'visme_admin',
   'linkedin',
   'facebook',
   'instagram',
@@ -176,7 +176,6 @@ export const APPROVED_SOURCES = [
   'reddit',
   'snapchat',
   'whatsapp',
-  'openai',
   'chatgpt',
 ] as const
 
@@ -202,10 +201,9 @@ export const SOCIAL_PLATFORMS = [
 export type SocialPlatform = (typeof SOCIAL_PLATFORMS)[number]['value']
 
 export const EMAIL_PLATFORMS = [
-  { label: 'Newsletter',              value: 'newsletter' },
-  { label: 'Transactional / Automated', value: 'email'   },
-  { label: 'HubSpot',                 value: 'hubspot'   },
-  { label: 'Instantly',               value: 'instantly' },
+  { label: 'HubSpot (warm outreach)',   value: 'hubspot'     },
+  { label: 'Instantly (cold outbound)', value: 'instantly'   },
+  { label: 'Admin / visme_admin',       value: 'visme_admin' },
 ] as const
 
 export type EmailPlatform = (typeof EMAIL_PLATFORMS)[number]['value']
