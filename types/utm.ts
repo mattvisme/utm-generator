@@ -201,9 +201,9 @@ export const SOCIAL_PLATFORMS = [
 export type SocialPlatform = (typeof SOCIAL_PLATFORMS)[number]['value']
 
 export const EMAIL_PLATFORMS = [
-  { label: 'HubSpot (warm outreach)',   value: 'hubspot'     },
-  { label: 'Instantly (cold outbound)', value: 'instantly'   },
-  { label: 'Admin / visme_admin',       value: 'visme_admin' },
+  { label: 'HubSpot',     value: 'hubspot'     },
+  { label: 'Instantly',   value: 'instantly'   },
+  { label: 'Visme Admin', value: 'visme_admin' },
 ] as const
 
 export type EmailPlatform = (typeof EMAIL_PLATFORMS)[number]['value']
