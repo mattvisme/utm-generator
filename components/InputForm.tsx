@@ -58,12 +58,23 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
   const [customSlug, setCustomSlug] = useState(initialData?.custom_slug || '')
   const [socialPlatform, setSocialPlatform] = useState(initialData?.social_platform || '')
   const [emailPlatform, setEmailPlatform] = useState(initialData?.email_platform || '')
+  const [isSequence, setIsSequence] = useState(initialData?.is_sequence || false)
+  const [sequenceSteps, setSequenceSteps] = useState<string[]>(initialData?.sequence_steps?.length ? initialData.sequence_steps : [''])
 
   const isPPC = PPC_CHANNELS.includes(channel as Channel)
   const showCohort = COHORT_CHANNELS.includes(channel as Channel)
   const isAffiliate = channel === 'Affiliate / Partner'
   const isSocial = SHORTLINK_CHANNELS.includes(channel as Channel)
   const isEmail = channel === 'Email / Newsletter'
+  const isSequenceCapable = emailPlatform === 'hubspot' || emailPlatform === 'instantly'
+
+  const normalizeStep = (s: string) =>
+    s.toLowerCase().replace(/[^a-z0-9_]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '')
+
+  const addStep = () => setSequenceSteps(prev => [...prev, ''])
+  const removeStep = (i: number) => setSequenceSteps(prev => prev.filter((_, idx) => idx !== i))
+  const updateStep = (i: number, value: string) =>
+    setSequenceSteps(prev => prev.map((s, idx) => idx === i ? normalizeStep(value) : s))
 
   // Fetch user list once on mount
   useEffect(() => {
@@ -98,6 +109,10 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
   useEffect(() => {
     if (!isEmail) setEmailPlatform('')
   }, [isEmail])
+
+  useEffect(() => {
+    if (!isSequenceCapable) { setIsSequence(false); setSequenceSteps(['']) }
+  }, [isSequenceCapable])
 
   useEffect(() => {
     if (!isAbTest) { setAbPreset(''); setAbCustom('') }
@@ -151,11 +166,14 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
       custom_slug: customSlug,
       social_platform: socialPlatform,
       email_platform: emailPlatform,
+      is_sequence: isSequence && isSequenceCapable,
+      sequence_steps: isSequence && isSequenceCapable ? sequenceSteps.filter(s => s.trim()) : [],
       cleanUrl: base,
     })
   }
 
-  const isValid = url && channel && channel !== '-- Select a channel --' && description && createdById && !urlError && (!isAffiliate || affiliateName) && (!isSocial || socialPlatform) && (!isEmail || emailPlatform)
+  const hasValidSteps = !isSequence || sequenceSteps.some(s => s.trim())
+  const isValid = url && channel && channel !== '-- Select a channel --' && description && createdById && !urlError && (!isAffiliate || affiliateName) && (!isSocial || socialPlatform) && (!isEmail || emailPlatform) && hasValidSteps
 
   const fieldLabel = (text: string, optional = false) => (
     <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.375rem' }}>
@@ -264,6 +282,76 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
               Select a sending platform to enable the Generate button.
             </p>
           )}
+        </div>
+      )}
+
+      {/* Sequence toggle — HubSpot and Instantly only */}
+      {isSequenceCapable && (
+        <div>
+          {fieldLabel('Email type')}
+          <div style={{ display: 'flex', gap: '0.625rem' }}>
+            <button type="button" onClick={() => setIsSequence(false)} disabled={loading} style={toggleButtonStyle(!isSequence)}>
+              Single email
+            </button>
+            <button type="button" onClick={() => setIsSequence(true)} disabled={loading} style={toggleButtonStyle(isSequence)}>
+              Sequence
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Step builder — sequence mode only */}
+      {isSequenceCapable && isSequence && (
+        <div>
+          {fieldLabel('Sequence steps')}
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem', marginBottom: '0.75rem', fontFamily: 'Lato, sans-serif' }}>
+            Each step becomes a separate UTM link. Use lowercase and underscores, e.g. <code style={{ background: '#f0f0f0', padding: '1px 4px', borderRadius: '3px' }}>invite_1</code>, <code style={{ background: '#f0f0f0', padding: '1px 4px', borderRadius: '3px' }}>reminder_1</code>.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            {sequenceSteps.map((step, i) => (
+              <div key={i} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'monospace', minWidth: '1.25rem', textAlign: 'right' }}>
+                  {i + 1}.
+                </span>
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder={`e.g. invite_${i + 1}`}
+                  value={step}
+                  onChange={(e) => updateStep(i, e.target.value)}
+                  disabled={loading}
+                  style={{ flex: 1 }}
+                />
+                {sequenceSteps.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeStep(i)}
+                    disabled={loading}
+                    style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '1rem', padding: '0 0.25rem', lineHeight: 1 }}
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={addStep}
+            disabled={loading}
+            style={{
+              marginTop: '0.625rem',
+              fontSize: '0.8125rem',
+              color: 'var(--accent)',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 0,
+              fontFamily: 'Lato, sans-serif',
+            }}
+          >
+            + Add step
+          </button>
         </div>
       )}
 

@@ -31,6 +31,7 @@ export interface GenerateRequest {
   affiliate_name?: string  // e.g. "john_smith" → utm_source=affiliate_john_smith
   social_platform?: string // e.g. "linkedin" — forces utm_source for social channels
   email_platform?: string  // e.g. "hubspot" — forces utm_source for email channels
+  is_sequence?: boolean
 }
 
 export interface GenerateResponse {
@@ -68,7 +69,13 @@ export interface SaveResponse {
   notion_url: string
 }
 
-export type AppState = 'input' | 'result' | 'success'
+export type AppState = 'input' | 'result' | 'sequence_review' | 'success'
+
+export interface SequenceApprovedItem {
+  step: string
+  url: string
+  notionUrl: string
+}
 
 export interface FormData {
   url: string
@@ -87,6 +94,8 @@ export interface FormData {
   custom_slug: string     // optional Rebrandly slug override
   social_platform: string // platform selected for social channels
   email_platform: string  // sending platform selected for email channels
+  is_sequence: boolean    // true when building an email sequence
+  sequence_steps: string[] // utm_content values per step e.g. ['invite_1', 'reminder_1']
 }
 
 export const CHANNELS = [

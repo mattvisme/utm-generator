@@ -7,7 +7,7 @@ import { GenerateRequest, APPROVED_MEDIUMS, APPROVED_SOURCES, INTERIM_AI_AD_MEDI
 export async function POST(req: NextRequest) {
   try {
     const body: GenerateRequest = await req.json()
-    const { url, channel, description, vc_parameter, campaign_name, campaign_date, cohort, ab_variant, affiliate_name, social_platform, email_platform } = body
+    const { url, channel, description, vc_parameter, campaign_name, campaign_date, cohort, ab_variant, affiliate_name, social_platform, email_platform, is_sequence } = body
 
     if (!url || !channel || !description) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -30,8 +30,14 @@ export async function POST(req: NextRequest) {
       ab_variant,
       affiliate_name,
       social_platform,
-      email_platform
+      email_platform,
+      is_sequence
     )
+
+    // For sequences, utm_content is set per-step client-side — ensure it's null here
+    if (is_sequence) {
+      suggestion.utm_content = null
+    }
 
     // If a social platform was provided, enforce it as utm_source regardless of what Claude returned
     if (social_platform) {

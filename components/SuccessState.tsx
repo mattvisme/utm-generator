@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { GenerateResponse } from '@/types/utm'
+import { GenerateResponse, SequenceApprovedItem } from '@/types/utm'
 
 const NOTION_DB_URL = 'https://www.notion.so/visme/34ad7facd2ae80469d62cb427f8e072c?v=34ad7facd2ae80e9a8f4000c69528090'
 
@@ -10,12 +10,22 @@ interface Props {
   onReset: () => void
   notionUrl?: string
   shortUrl?: string
+  sequenceApproved?: SequenceApprovedItem[]
 }
 
-export default function SuccessState({ result, onReset, notionUrl, shortUrl }: Props) {
+export default function SuccessState({ result, onReset, notionUrl, shortUrl, sequenceApproved }: Props) {
   const [copied, setCopied] = useState(false)
   const [copiedShort, setCopiedShort] = useState(false)
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
   const { suggestion, final_url } = result
+
+  const copySequenceUrl = async (url: string, i: number) => {
+    await navigator.clipboard.writeText(url)
+    setCopiedIndex(i)
+    setTimeout(() => setCopiedIndex(null), 2000)
+  }
+
+  const isSequence = sequenceApproved && sequenceApproved.length > 0
 
   const copy = async () => {
     await navigator.clipboard.writeText(final_url)
@@ -36,35 +46,65 @@ export default function SuccessState({ result, onReset, notionUrl, shortUrl }: P
     { label: 'campaign', value: suggestion.utm_campaign },
   ]
 
+  const checkmark = (
+    <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#DCFCE7', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
+    </div>
+  )
+
+  if (isSequence && sequenceApproved) {
+    return (
+      <div className="card" style={{ padding: '2rem 1.5rem', textAlign: 'center' }}>
+        {checkmark}
+        <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: '1.25rem', color: 'var(--text)', marginBottom: '0.375rem' }}>
+          Sequence saved
+        </h2>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', fontFamily: 'Lato, sans-serif', marginBottom: '1.5rem' }}>
+          {sequenceApproved.length} of {sequenceApproved.length} step{sequenceApproved.length !== 1 ? 's' : ''} saved to Notion
+        </p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem', textAlign: 'left', marginBottom: '1.5rem' }}>
+          {sequenceApproved.map((item, i) => (
+            <div key={i} style={{ background: '#f5f9fc', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-sm)', padding: '0.875rem 1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                <code style={{ fontFamily: 'monospace', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--accent)' }}>{item.step}</code>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button onClick={() => copySequenceUrl(item.url, i)} className="btn-secondary" style={{ padding: '0.25rem 0.625rem', fontSize: '0.75rem' }}>
+                    {copiedIndex === i ? 'Copied ✓' : 'Copy'}
+                  </button>
+                  {item.notionUrl && (
+                    <a href={item.notionUrl} target="_blank" rel="noopener noreferrer" className="btn-secondary" style={{ padding: '0.25rem 0.625rem', fontSize: '0.75rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
+                      Notion →
+                    </a>
+                  )}
+                </div>
+              </div>
+              <code style={{ fontSize: '0.75rem', color: 'var(--text-muted)', wordBreak: 'break-all', lineHeight: '1.5', display: 'block' }}>
+                {item.url}
+              </code>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', gap: '0.75rem' }}>
+          <button onClick={onReset} className="btn-secondary" style={{ flex: 1, padding: '0.75rem 1rem', fontSize: '0.9375rem' }}>
+            Generate Another
+          </button>
+          <a href={NOTION_DB_URL} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ flex: 1, padding: '0.75rem 1rem', fontSize: '0.9375rem', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            View in Notion →
+          </a>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="card" style={{ padding: '2rem 1.5rem', textAlign: 'center' }}>
-      {/* Checkmark */}
-      <div
-        style={{
-          width: '56px',
-          height: '56px',
-          borderRadius: '50%',
-          background: '#DCFCE7',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          margin: '0 auto 1rem',
-        }}
-      >
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="20 6 9 17 4 12" />
-        </svg>
-      </div>
+      {checkmark}
 
-      <h2
-        style={{
-          fontFamily: 'Montserrat, sans-serif',
-          fontWeight: 700,
-          fontSize: '1.25rem',
-          color: 'var(--text)',
-          marginBottom: '0.5rem',
-        }}
-      >
+      <h2 style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: '1.25rem', color: 'var(--text)', marginBottom: '0.5rem' }}>
         UTM link saved
       </h2>
 
@@ -72,28 +112,10 @@ export default function SuccessState({ result, onReset, notionUrl, shortUrl }: P
       <div style={{ margin: '1.25rem 0', textAlign: 'left' }}>
         <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'Lato, sans-serif', marginBottom: '0.5rem' }}>Final URL</p>
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-          <code
-            style={{
-              flex: 1,
-              background: '#f5f9fc',
-              border: '1px solid var(--border-light)',
-              borderRadius: 'var(--radius-sm)',
-              padding: '0.625rem 0.875rem',
-              fontSize: '0.8125rem',
-              color: 'var(--text)',
-              wordBreak: 'break-all',
-              lineHeight: '1.5',
-              display: 'block',
-              textAlign: 'left',
-            }}
-          >
+          <code style={{ flex: 1, background: '#f5f9fc', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-sm)', padding: '0.625rem 0.875rem', fontSize: '0.8125rem', color: 'var(--text)', wordBreak: 'break-all', lineHeight: '1.5', display: 'block', textAlign: 'left' }}>
             {final_url}
           </code>
-          <button
-            onClick={copy}
-            className="btn-secondary"
-            style={{ padding: '0.625rem 1rem', fontSize: '0.8125rem', whiteSpace: 'nowrap', flexShrink: 0 }}
-          >
+          <button onClick={copy} className="btn-secondary" style={{ padding: '0.625rem 1rem', fontSize: '0.8125rem', whiteSpace: 'nowrap', flexShrink: 0 }}>
             {copied ? 'Copied ✓' : 'Copy'}
           </button>
         </div>
@@ -104,28 +126,10 @@ export default function SuccessState({ result, onReset, notionUrl, shortUrl }: P
         <div style={{ margin: '0 0 1.25rem', textAlign: 'left' }}>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'Lato, sans-serif', marginBottom: '0.5rem' }}>Short URL</p>
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-            <code
-              style={{
-                flex: 1,
-                background: '#f0f7ff',
-                border: '1px solid var(--border-light)',
-                borderRadius: 'var(--radius-sm)',
-                padding: '0.625rem 0.875rem',
-                fontSize: '0.8125rem',
-                color: 'var(--text)',
-                wordBreak: 'break-all',
-                lineHeight: '1.5',
-                display: 'block',
-                textAlign: 'left',
-              }}
-            >
+            <code style={{ flex: 1, background: '#f0f7ff', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-sm)', padding: '0.625rem 0.875rem', fontSize: '0.8125rem', color: 'var(--text)', wordBreak: 'break-all', lineHeight: '1.5', display: 'block', textAlign: 'left' }}>
               {shortUrl}
             </code>
-            <button
-              onClick={copyShort}
-              className="btn-secondary"
-              style={{ padding: '0.625rem 1rem', fontSize: '0.8125rem', whiteSpace: 'nowrap', flexShrink: 0 }}
-            >
+            <button onClick={copyShort} className="btn-secondary" style={{ padding: '0.625rem 1rem', fontSize: '0.8125rem', whiteSpace: 'nowrap', flexShrink: 0 }}>
               {copiedShort ? 'Copied ✓' : 'Copy'}
             </button>
           </div>
@@ -135,18 +139,7 @@ export default function SuccessState({ result, onReset, notionUrl, shortUrl }: P
       {/* Badges */}
       <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
         {badges.map(({ label, value }) => (
-          <span
-            key={label}
-            style={{
-              background: 'var(--surface2)',
-              border: '1px solid var(--border)',
-              borderRadius: '20px',
-              padding: '0.25rem 0.75rem',
-              fontSize: '0.75rem',
-              fontFamily: 'monospace',
-              color: 'var(--text-muted)',
-            }}
-          >
+          <span key={label} style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '20px', padding: '0.25rem 0.75rem', fontSize: '0.75rem', fontFamily: 'monospace', color: 'var(--text-muted)' }}>
             <span style={{ color: 'var(--text-dim)' }}>{label}=</span>
             <span style={{ color: 'var(--text)', fontWeight: 700 }}>{value}</span>
           </span>
@@ -155,28 +148,10 @@ export default function SuccessState({ result, onReset, notionUrl, shortUrl }: P
 
       {/* Actions */}
       <div style={{ display: 'flex', gap: '0.75rem' }}>
-        <button
-          onClick={onReset}
-          className="btn-secondary"
-          style={{ flex: 1, padding: '0.75rem 1rem', fontSize: '0.9375rem' }}
-        >
+        <button onClick={onReset} className="btn-secondary" style={{ flex: 1, padding: '0.75rem 1rem', fontSize: '0.9375rem' }}>
           Generate Another
         </button>
-        <a
-          href={notionUrl || NOTION_DB_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn-primary"
-          style={{
-            flex: 1,
-            padding: '0.75rem 1rem',
-            fontSize: '0.9375rem',
-            textDecoration: 'none',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
+        <a href={notionUrl || NOTION_DB_URL} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ flex: 1, padding: '0.75rem 1rem', fontSize: '0.9375rem', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {notionUrl ? 'View Record →' : 'View in Notion →'}
         </a>
       </div>
