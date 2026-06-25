@@ -149,6 +149,8 @@ export const APPROVED_SOURCES = [
   'yandex',
   'newsletter',
   'email',
+  'hubspot',
+  'instantly',
   'linkedin',
   'facebook',
   'instagram',
