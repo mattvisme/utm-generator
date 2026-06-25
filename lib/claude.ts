@@ -107,7 +107,8 @@ export async function generateUTMs(
   cohort?: string,
   abVariant?: string,
   affiliateName?: string,
-  socialPlatform?: string
+  socialPlatform?: string,
+  emailPlatform?: string
 ): Promise<UTMSuggestion> {
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY is not configured')
@@ -135,6 +136,9 @@ export async function generateUTMs(
       : null,
     socialPlatform
       ? `Social platform selected by user: ${socialPlatform} — set utm_source to exactly "${socialPlatform}".`
+      : null,
+    emailPlatform
+      ? `Email sending platform selected by user: ${emailPlatform} — set utm_source to exactly "${emailPlatform}".`
       : null,
     vcParameter ? `Existing vc= value to preserve: ${vcParameter}` : null,
   ]

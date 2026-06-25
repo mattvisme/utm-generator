@@ -42,6 +42,7 @@ export default function HomePage() {
           ab_variant: data.is_ab_test && data.ab_variant ? data.ab_variant : undefined,
           affiliate_name: data.affiliate_name || undefined,
           social_platform: data.social_platform || undefined,
+          email_platform: data.email_platform || undefined,
         }),
       })
       const json = await res.json()

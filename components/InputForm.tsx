@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { FormData, NotionUser, CHANNELS, PPC_CHANNELS, COHORT_CHANNELS, SHORTLINK_CHANNELS, SOCIAL_PLATFORMS, MONTHS, Channel } from '@/types/utm'
+import { FormData, NotionUser, CHANNELS, PPC_CHANNELS, COHORT_CHANNELS, SHORTLINK_CHANNELS, SOCIAL_PLATFORMS, EMAIL_PLATFORMS, MONTHS, Channel } from '@/types/utm'
 import { isVismeUrl, stripUtmParams } from '@/lib/utm-utils'
 import PPCWarning from './PPCWarning'
 import LoadingSpinner from './LoadingSpinner'
@@ -57,11 +57,13 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
   const [affiliateName, setAffiliateName] = useState(initialData?.affiliate_name || '')
   const [customSlug, setCustomSlug] = useState(initialData?.custom_slug || '')
   const [socialPlatform, setSocialPlatform] = useState(initialData?.social_platform || '')
+  const [emailPlatform, setEmailPlatform] = useState(initialData?.email_platform || '')
 
   const isPPC = PPC_CHANNELS.includes(channel as Channel)
   const showCohort = COHORT_CHANNELS.includes(channel as Channel)
   const isAffiliate = channel === 'Affiliate / Partner'
   const isSocial = SHORTLINK_CHANNELS.includes(channel as Channel)
+  const isEmail = channel === 'Email / Newsletter'
 
   // Fetch user list once on mount
   useEffect(() => {
@@ -92,6 +94,10 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
   useEffect(() => {
     if (!isSocial) { setCustomSlug(''); setSocialPlatform('') }
   }, [isSocial])
+
+  useEffect(() => {
+    if (!isEmail) setEmailPlatform('')
+  }, [isEmail])
 
   useEffect(() => {
     if (!isAbTest) { setAbPreset(''); setAbCustom('') }
@@ -144,11 +150,12 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
       affiliate_name: affiliateName,
       custom_slug: customSlug,
       social_platform: socialPlatform,
+      email_platform: emailPlatform,
       cleanUrl: base,
     })
   }
 
-  const isValid = url && channel && channel !== '-- Select a channel --' && description && createdById && !urlError && (!isAffiliate || affiliateName) && (!isSocial || socialPlatform)
+  const isValid = url && channel && channel !== '-- Select a channel --' && description && createdById && !urlError && (!isAffiliate || affiliateName) && (!isSocial || socialPlatform) && (!isEmail || emailPlatform)
 
   const fieldLabel = (text: string, optional = false) => (
     <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.375rem' }}>
@@ -231,6 +238,34 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
           </div>
         )}
       </div>
+
+      {/* Email platform — required for Email / Newsletter */}
+      {isEmail && (
+        <div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.375rem' }}>
+            <label className="label" style={{ margin: 0 }}>Sending Platform</label>
+            <span style={{ color: '#DC2626' }}>*</span>
+          </div>
+          <select
+            className="input-field"
+            value={emailPlatform}
+            onChange={(e) => setEmailPlatform(e.target.value)}
+            disabled={loading}
+            required
+            style={{ cursor: 'pointer' }}
+          >
+            <option value="">-- Select platform --</option>
+            {EMAIL_PLATFORMS.map((p) => (
+              <option key={p.value} value={p.value}>{p.label}</option>
+            ))}
+          </select>
+          {!emailPlatform && (
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem', marginTop: '0.375rem', fontFamily: 'Lato, sans-serif' }}>
+              Select a sending platform to enable the Generate button.
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Social platform — required for Organic Social and Paid Social */}
       {isSocial && (

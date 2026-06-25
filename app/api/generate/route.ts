@@ -7,7 +7,7 @@ import { GenerateRequest, APPROVED_MEDIUMS, APPROVED_SOURCES, INTERIM_AI_AD_MEDI
 export async function POST(req: NextRequest) {
   try {
     const body: GenerateRequest = await req.json()
-    const { url, channel, description, vc_parameter, campaign_name, campaign_date, cohort, ab_variant, affiliate_name, social_platform } = body
+    const { url, channel, description, vc_parameter, campaign_name, campaign_date, cohort, ab_variant, affiliate_name, social_platform, email_platform } = body
 
     if (!url || !channel || !description) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -29,12 +29,18 @@ export async function POST(req: NextRequest) {
       cohort,
       ab_variant,
       affiliate_name,
-      social_platform
+      social_platform,
+      email_platform
     )
 
     // If a social platform was provided, enforce it as utm_source regardless of what Claude returned
     if (social_platform) {
       suggestion.utm_source = social_platform.toLowerCase().trim()
+    }
+
+    // If an email platform was provided, enforce it as utm_source
+    if (email_platform) {
+      suggestion.utm_source = email_platform.toLowerCase().trim()
     }
 
     // Validate medium is from approved list (INTERIM_AI_AD_MEDIUMS also allowed)

@@ -30,6 +30,7 @@ export interface GenerateRequest {
   ab_variant?: string      // e.g. "a", "b", "c", or custom label
   affiliate_name?: string  // e.g. "john_smith" → utm_source=affiliate_john_smith
   social_platform?: string // e.g. "linkedin" — forces utm_source for social channels
+  email_platform?: string  // e.g. "hubspot" — forces utm_source for email channels
 }
 
 export interface GenerateResponse {
@@ -85,6 +86,7 @@ export interface FormData {
   affiliate_name: string  // normalised to lowercase_underscores
   custom_slug: string     // optional Rebrandly slug override
   social_platform: string // platform selected for social channels
+  email_platform: string  // sending platform selected for email channels
 }
 
 export const CHANNELS = [
@@ -189,6 +191,15 @@ export const SOCIAL_PLATFORMS = [
 ] as const
 
 export type SocialPlatform = (typeof SOCIAL_PLATFORMS)[number]['value']
+
+export const EMAIL_PLATFORMS = [
+  { label: 'Newsletter',              value: 'newsletter' },
+  { label: 'Transactional / Automated', value: 'email'   },
+  { label: 'HubSpot',                 value: 'hubspot'   },
+  { label: 'Instantly',               value: 'instantly' },
+] as const
+
+export type EmailPlatform = (typeof EMAIL_PLATFORMS)[number]['value']
 
 export const MONTHS = [
   { value: '01', label: 'Jan' },
