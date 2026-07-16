@@ -66,7 +66,7 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
   const isAffiliate = channel === 'Affiliate / Partner'
   const isSocial = SHORTLINK_CHANNELS.includes(channel as Channel)
   const isEmail = channel === 'Email / Newsletter'
-  const isSequenceCapable = emailPlatform === 'hubspot' || emailPlatform === 'instantly'
+  const isSequenceCapable = emailPlatform === 'hubspot' || emailPlatform === 'instantly' || emailPlatform === 'mixmax'
 
   const normalizeStep = (s: string) =>
     s.toLowerCase().replace(/[^a-z0-9_]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '')

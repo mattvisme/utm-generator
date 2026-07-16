@@ -161,6 +161,7 @@ export const APPROVED_SOURCES = [
   'yandex',
   'hubspot',
   'instantly',
+  'mixmax',
   'visme_admin',
   'linkedin',
   'facebook',
@@ -203,6 +204,7 @@ export type SocialPlatform = (typeof SOCIAL_PLATFORMS)[number]['value']
 export const EMAIL_PLATFORMS = [
   { label: 'HubSpot',     value: 'hubspot'     },
   { label: 'Instantly',   value: 'instantly'   },
+  { label: 'MixMax',      value: 'mixmax'      },
   { label: 'Visme Admin', value: 'visme_admin' },
 ] as const
 

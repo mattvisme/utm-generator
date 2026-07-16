@@ -7,7 +7,7 @@ VISME CONTEXT:
 Visme helps users create presentations, infographics, reports, charts, and branded content. Customers include marketers, designers, educators, and enterprise teams. Key conversion goals are free trial signups and paid plan upgrades.
 
 APPROVED utm_source VALUES:
-google, bing, yandex, hubspot, instantly, visme_admin, linkedin, facebook, instagram, twitter, tiktok, youtube, exported_pdf, visme_app, blog, affiliate_[partner_name], chatgpt
+google, bing, yandex, hubspot, instantly, mixmax, visme_admin, linkedin, facebook, instagram, twitter, tiktok, youtube, exported_pdf, visme_app, blog, affiliate_[partner_name], chatgpt
 For affiliate, replace [partner_name] with the specific partner name in lowercase (e.g. affiliate_buffer, affiliate_zapier).
 For any other source not in this list, use the closest lowercase equivalent and set ga4_setup_required=true.
 
@@ -16,6 +16,7 @@ IMPORTANT — legacy email sources "newsletter" and "email" are retired. Do not 
 For email sends, the approved sources are:
 - hubspot — HubSpot warm/marketing emails
 - instantly — cold outbound via Instantly
+- mixmax — outbound emails sent via MixMax
 - visme_admin — admin sends, legacy newsletter sends being sunset
 If the user describes an email send on a platform that is not one of these three, do not guess a source. Return an error in the reasoning field explaining that no approved source exists for that platform and that the user should contact Matt Strydom to get one added before generating the link. Set ga4_setup_required=true and ga4_setup_reason to the same message.
 
@@ -60,6 +61,7 @@ CHANNEL RULES:
 - Bing Ads: source=bing, medium=cpc. Set ppc_warning=true.
 - HubSpot warm/marketing email: source=hubspot, medium=email
 - Instantly cold outbound email: source=instantly, medium=email
+- MixMax outbound email: source=mixmax, medium=email
 - Admin / newsletter (being sunset): source=visme_admin, medium=email
 Never use medium=newsletter. GA4's Email channel rule only recognises "email", "e-mail", "e_mail", and "e mail" as valid medium values for Email channel classification. medium=newsletter will land in Unassigned.
 - LinkedIn paid: source=linkedin, medium=paid_social
