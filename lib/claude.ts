@@ -7,7 +7,7 @@ VISME CONTEXT:
 Visme helps users create presentations, infographics, reports, charts, and branded content. Customers include marketers, designers, educators, and enterprise teams. Key conversion goals are free trial signups and paid plan upgrades.
 
 APPROVED utm_source VALUES:
-google, bing, yandex, hubspot, instantly, mixmax, visme_admin, linkedin, facebook, instagram, twitter, tiktok, youtube, exported_pdf, visme_app, blog, affiliate_[partner_name], chatgpt
+google, bing, yandex, hubspot, instantly, mixmax, visme_admin, website, linkedin, facebook, instagram, twitter, tiktok, youtube, exported_pdf, visme_app, blog, affiliate_[partner_name], chatgpt
 For affiliate, replace [partner_name] with the specific partner name in lowercase (e.g. affiliate_buffer, affiliate_zapier).
 For any other source not in this list, use the closest lowercase equivalent and set ga4_setup_required=true.
 
@@ -79,7 +79,8 @@ Never use medium=newsletter. GA4's Email channel rule only recognises "email", "
 - Display: source=the ad network name in lowercase (e.g. google, criteo, adroll), medium=display. If the source is not google, bing, or yandex, set ga4_setup_required=true with reason "Non-standard display network source — confirm GA4 channel grouping."
 - Referral (link placed on a third-party site, review platform, or directory — not a paid affiliate): source=the referring site name in lowercase without TLD (e.g. g2, capterra, techradar, hubspot), medium=referral. ga4_setup_required=false (referral is a GA4 default channel).
 - Product Feature (in-app link or in-product prompt): source=visme_app, medium=internal. Set ga4_setup_required=true with reason "utm_medium=internal requires a GA4 custom channel group."
-- Blog / On-site CTA (link within visme.co blog or website): source=blog, medium=internal. Set ga4_setup_required=true with reason "utm_medium=internal requires a GA4 custom channel group."
+- Blog CTA (link within visme.co blog content): source=blog, medium=internal. Set ga4_setup_required=true with reason "utm_medium=internal requires a GA4 custom channel group."
+- Website CTA (link on visme.co marketing site pages — nav, hero, landing pages, pricing, etc. but not blog content): source=website, medium=internal. Set ga4_setup_required=true with reason "utm_medium=internal requires a GA4 custom channel group."
 - Exported PDF / Watermark (product watermark or badge on content exported from Visme): source=exported_pdf, medium=badge. Set ga4_setup_required=true with reason "utm_medium=badge requires a GA4 custom channel group."
 - Paid AI (OpenAI): source=chatgpt, medium=paid_ai. Set ga4_setup_required=true with reason "paid_ai is an interim medium for OpenAI/ChatGPT paid placements. GA4 will report this as Unassigned until Google publishes an official AI Ads channel grouping. This is a deliberate decision — do not change to cpc or display. Revisit when GA4 spec is published."
 - Other: use your best judgment from the description. If the medium is not in the approved list above, set ga4_setup_required=true and explain in ga4_setup_reason.

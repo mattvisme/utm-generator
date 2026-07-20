@@ -163,6 +163,7 @@ export const APPROVED_SOURCES = [
   'instantly',
   'mixmax',
   'visme_admin',
+  'website',
   'linkedin',
   'facebook',
   'instagram',
