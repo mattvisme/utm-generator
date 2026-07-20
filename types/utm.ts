@@ -110,7 +110,8 @@ export const CHANNELS = [
   'Referral',
   'Affiliate / Partner',
   'Product Feature',
-  'Blog / On-site CTA',
+  'Blog CTA',
+  'Website CTA',
   'Exported PDF / Watermark',
   'Other',
 ] as const
