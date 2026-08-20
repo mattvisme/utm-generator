@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { GenerateResponse, FormData, PPC_CHANNELS, Channel } from '@/types/utm'
+import { MAX_CAMPAIGN_LENGTH } from '@/lib/utm-utils'
 import PPCWarning from './PPCWarning'
 import LoadingSpinner from './LoadingSpinner'
 
@@ -91,7 +92,7 @@ export default function UTMResult({ result, formData, onApprove, onReject, appro
 
             {truncated_campaign && (
               <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.75rem', fontFamily: 'Lato, sans-serif' }}>
-                Campaign name truncated to 30 characters.
+                Campaign name truncated to {MAX_CAMPAIGN_LENGTH} characters. The original is kept in the reasoning notes.
               </p>
             )}
 

@@ -58,7 +58,19 @@ export function buildFinalUrl(
   }
 }
 
-export function truncateCampaign(campaign: string, max = 30): { value: string; truncated: boolean } {
+// GA4 truncates any event parameter value at 100 characters, and campaign name is
+// carried as an event parameter, so 100 is the real platform ceiling. No platform in
+// the Visme stack caps campaign names below this.
+//
+// This was 30 from the initial build (384f20d, 2026-04-22) with no stated reason, which
+// silently clipped names mid-word — e.g. state_b2b_sales_content_benchmark became
+// state_b2b_sales_content_benchm. Raised to the actual GA4 limit 2026-08-20.
+export const MAX_CAMPAIGN_LENGTH = 100
+
+export function truncateCampaign(
+  campaign: string,
+  max = MAX_CAMPAIGN_LENGTH
+): { value: string; truncated: boolean } {
   if (campaign.length <= max) return { value: campaign, truncated: false }
   // Strip any trailing underscore left by the slice boundary
   const sliced = campaign.slice(0, max).replace(/_+$/, '')

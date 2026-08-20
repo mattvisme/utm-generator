@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateUTMs } from '@/lib/claude'
 import { findSimilarRecord } from '@/lib/notion'
-import { isVismeUrl, stripUtmParams, buildFinalUrl, truncateCampaign } from '@/lib/utm-utils'
+import { isVismeUrl, stripUtmParams, buildFinalUrl, truncateCampaign, MAX_CAMPAIGN_LENGTH } from '@/lib/utm-utils'
 import { GenerateRequest, APPROVED_MEDIUMS, APPROVED_SOURCES, INTERIM_AI_AD_MEDIUMS } from '@/types/utm'
 
 export async function POST(req: NextRequest) {
@@ -93,10 +93,21 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const { value: campaign, truncated } = truncateCampaign(suggestion.utm_campaign)
+    const originalCampaign = suggestion.utm_campaign
+    const { value: campaign, truncated } = truncateCampaign(originalCampaign)
     if (truncated) {
-      console.warn(`[generate] Campaign truncated: "${suggestion.utm_campaign}" → "${campaign}"`)
+      console.warn(`[generate] Campaign truncated: "${originalCampaign}" → "${campaign}"`)
       suggestion.utm_campaign = campaign
+      // Record the original in the reasoning text. Reasoning is persisted to the Notion
+      // row, so this is the only lasting audit trail — without it the intended name is
+      // lost as soon as the response is returned, leaving a clipped value in the
+      // registry that is indistinguishable from a name someone typed that way.
+      suggestion.reasoning = [
+        suggestion.reasoning,
+        `Campaign name exceeded ${MAX_CAMPAIGN_LENGTH} characters and was truncated for GA4. Original: "${originalCampaign}"`,
+      ]
+        .filter(Boolean)
+        .join('\n\n')
     }
 
     const final_url = buildFinalUrl(cleanUrl, suggestion, vc_parameter)
