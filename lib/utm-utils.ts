@@ -9,6 +9,29 @@ export function isVismeUrl(raw: string): boolean {
   }
 }
 
+const SECOND_LEVEL_TLDS = new Set(['co', 'com', 'org', 'net', 'gov', 'edu', 'ac'])
+
+// Referral utm_source = referring site name, lowercase, no TLD (per the UTM framework).
+// Accepts a bare name, a domain or a full URL: https://www.techradar.com/x → techradar, bbc.co.uk → bbc.
+export function normalizeReferralSite(raw: string): string {
+  let host = raw.trim().toLowerCase()
+  try {
+    host = new URL(host.includes('://') ? host : `https://${host}`).hostname
+  } catch {
+    // not URL-parseable — fall through and sanitise the raw text
+  }
+  const labels = host.replace(/^www\./, '').split('.').filter(Boolean)
+  if (labels.length > 1) {
+    labels.pop()
+    if (labels.length > 1 && SECOND_LEVEL_TLDS.has(labels[labels.length - 1])) labels.pop()
+  }
+  return labels
+    .join('_')
+    .replace(/[^a-z0-9_]/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_|_$/g, '')
+}
+
 export interface CleanedUrl {
   base: string
   hadUtms: boolean

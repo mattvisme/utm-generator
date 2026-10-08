@@ -117,7 +117,8 @@ export async function generateUTMs(
   affiliateName?: string,
   socialPlatform?: string,
   emailPlatform?: string,
-  isSequence?: boolean
+  isSequence?: boolean,
+  referralSite?: string
 ): Promise<UTMSuggestion> {
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY is not configured')
@@ -148,6 +149,9 @@ export async function generateUTMs(
       : null,
     emailPlatform
       ? `Email sending platform selected by user: ${emailPlatform} — set utm_source to exactly "${emailPlatform}".`
+      : null,
+    referralSite
+      ? `Referring site selected by user: ${referralSite} — set utm_source to exactly "${referralSite}" and utm_medium to referral.`
       : null,
     isSequence
       ? 'This is an email sequence. Leave utm_content as null — it will be set individually per sequence step.'

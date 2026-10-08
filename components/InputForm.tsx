@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { FormData, NotionUser, CHANNELS, PPC_CHANNELS, COHORT_CHANNELS, SHORTLINK_CHANNELS, SOCIAL_PLATFORMS, EMAIL_PLATFORMS, MONTHS, Channel } from '@/types/utm'
-import { isVismeUrl, stripUtmParams } from '@/lib/utm-utils'
+import { isVismeUrl, stripUtmParams, normalizeReferralSite } from '@/lib/utm-utils'
 import PPCWarning from './PPCWarning'
 import LoadingSpinner from './LoadingSpinner'
 
@@ -58,6 +58,7 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
   const [customSlug, setCustomSlug] = useState(initialData?.custom_slug || '')
   const [socialPlatform, setSocialPlatform] = useState(initialData?.social_platform || '')
   const [emailPlatform, setEmailPlatform] = useState(initialData?.email_platform || '')
+  const [referralSite, setReferralSite] = useState(initialData?.referral_site || '')
   const [isSequence, setIsSequence] = useState(initialData?.is_sequence || false)
   const [sequenceSteps, setSequenceSteps] = useState<string[]>(initialData?.sequence_steps?.length ? initialData.sequence_steps : [''])
 
@@ -65,7 +66,9 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
   const showCohort = COHORT_CHANNELS.includes(channel as Channel)
   const isAffiliate = channel === 'Affiliate / Partner'
   const isSocial = SHORTLINK_CHANNELS.includes(channel as Channel)
-  const isEmail = channel === 'Email / Newsletter'
+  const isEmail = channel === 'Email'
+  const isReferral = channel === 'Referral'
+  const referralSiteSource = normalizeReferralSite(referralSite)
   const isSequenceCapable = emailPlatform === 'hubspot' || emailPlatform === 'instantly' || emailPlatform === 'mixmax'
 
   const normalizeStep = (s: string) =>
@@ -109,6 +112,10 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
   useEffect(() => {
     if (!isEmail) setEmailPlatform('')
   }, [isEmail])
+
+  useEffect(() => {
+    if (!isReferral) setReferralSite('')
+  }, [isReferral])
 
   useEffect(() => {
     if (!isSequenceCapable) { setIsSequence(false); setSequenceSteps(['']) }
@@ -166,6 +173,7 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
       custom_slug: customSlug,
       social_platform: socialPlatform,
       email_platform: emailPlatform,
+      referral_site: referralSiteSource,
       is_sequence: isSequence && isSequenceCapable,
       sequence_steps: isSequence && isSequenceCapable ? sequenceSteps.filter(s => s.trim()) : [],
       cleanUrl: base,
@@ -173,7 +181,7 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
   }
 
   const hasValidSteps = !isSequence || sequenceSteps.some(s => s.trim())
-  const isValid = url && channel && channel !== '-- Select a channel --' && description && createdById && !urlError && (!isAffiliate || affiliateName) && (!isSocial || socialPlatform) && (!isEmail || emailPlatform) && hasValidSteps
+  const isValid = url && channel && channel !== '-- Select a channel --' && description && createdById && !urlError && (!isAffiliate || affiliateName) && (!isSocial || socialPlatform) && (!isEmail || emailPlatform) && (!isReferral || referralSiteSource) && hasValidSteps
 
   const fieldLabel = (text: string, optional = false) => (
     <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.375rem' }}>
@@ -257,7 +265,7 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
         )}
       </div>
 
-      {/* Email platform — required for Email / Newsletter */}
+      {/* Email platform — required for Email */}
       {isEmail && (
         <div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.375rem' }}>
@@ -407,6 +415,29 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
         </div>
       )}
 
+      {/* Referring site — required for Referral */}
+      {isReferral && (
+        <div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.375rem' }}>
+            <label className="label" style={{ margin: 0 }} htmlFor="referral_site">Referring Site</label>
+            <span style={{ color: '#DC2626' }}>*</span>
+          </div>
+          <input
+            id="referral_site"
+            type="text"
+            className="input-field"
+            placeholder="e.g. techradar.com"
+            value={referralSite}
+            onChange={(e) => setReferralSite(e.target.value)}
+            disabled={loading}
+            required
+          />
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem', marginTop: '0.375rem', fontFamily: 'Lato, sans-serif' }}>
+            The site where this link will be placed. Sets <code style={{ background: '#f0f0f0', padding: '1px 4px', borderRadius: '3px' }}>utm_source={referralSiteSource || 'site_name'}</code>
+          </p>
+        </div>
+      )}
+
       {/* Description */}
       <div>
         <label className="label" htmlFor="description">
@@ -531,7 +562,7 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
         )}
       </div>
 
-      {/* Cohort — conditional on Email/Newsletter and Product Feature */}
+      {/* Cohort — conditional on Email and Product Feature */}
       {showCohort && (
         <div>
           {fieldLabel('Target Audience', true)}

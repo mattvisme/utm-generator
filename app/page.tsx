@@ -56,6 +56,7 @@ export default function HomePage() {
           affiliate_name: data.affiliate_name || undefined,
           social_platform: data.social_platform || undefined,
           email_platform: data.email_platform || undefined,
+          referral_site: data.referral_site || undefined,
           is_sequence: data.is_sequence || undefined,
         }),
       })

@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateUTMs } from '@/lib/claude'
 import { findSimilarRecord } from '@/lib/notion'
-import { isVismeUrl, stripUtmParams, buildFinalUrl, truncateCampaign, MAX_CAMPAIGN_LENGTH } from '@/lib/utm-utils'
+import { isVismeUrl, stripUtmParams, buildFinalUrl, truncateCampaign, normalizeReferralSite, MAX_CAMPAIGN_LENGTH } from '@/lib/utm-utils'
 import { GenerateRequest, APPROVED_MEDIUMS, APPROVED_SOURCES, INTERIM_AI_AD_MEDIUMS } from '@/types/utm'
 
 export async function POST(req: NextRequest) {
   try {
     const body: GenerateRequest = await req.json()
-    const { url, channel, description, vc_parameter, campaign_name, campaign_date, cohort, ab_variant, affiliate_name, social_platform, email_platform, is_sequence } = body
+    const { url, channel, description, vc_parameter, campaign_name, campaign_date, cohort, ab_variant, affiliate_name, social_platform, email_platform, referral_site, is_sequence } = body
 
     if (!url || !channel || !description) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -15,6 +15,11 @@ export async function POST(req: NextRequest) {
 
     if (!isVismeUrl(url)) {
       return NextResponse.json({ error: 'URL must be a visme.co domain' }, { status: 400 })
+    }
+
+    const referralSite = referral_site ? normalizeReferralSite(referral_site) : ''
+    if (channel === 'Referral' && !referralSite) {
+      return NextResponse.json({ error: 'Referring site is required for the Referral channel' }, { status: 400 })
     }
 
     const { base: cleanUrl } = stripUtmParams(url)
@@ -31,7 +36,8 @@ export async function POST(req: NextRequest) {
       affiliate_name,
       social_platform,
       email_platform,
-      is_sequence
+      is_sequence,
+      referralSite || undefined
     )
 
     // For sequences, utm_content is set per-step client-side — ensure it's null here
@@ -47,6 +53,11 @@ export async function POST(req: NextRequest) {
     // If an email platform was provided, enforce it as utm_source
     if (email_platform) {
       suggestion.utm_source = email_platform.toLowerCase().trim()
+    }
+
+    // If a referring site was provided, enforce it as utm_source
+    if (referralSite) {
+      suggestion.utm_source = referralSite
     }
 
     // Validate medium is from approved list (INTERIM_AI_AD_MEDIUMS also allowed)
@@ -81,9 +92,11 @@ export async function POST(req: NextRequest) {
     const isApprovedSource =
       (APPROVED_SOURCES as readonly string[]).includes(suggestion.utm_source) ||
       /^affiliate_[a-z0-9_]+$/.test(suggestion.utm_source)
-    if (!isApprovedSource) {
+    // Referral sources are the referring site's name (g2, techradar…), so they are never on the approved list
+    // and need no GA4 setup — referral is a GA4 default channel.
+    if (!isApprovedSource && suggestion.utm_medium !== 'referral') {
       console.warn(`[generate] Non-standard source: "${suggestion.utm_source}" — verifying GA4 flag`)
-      // Non-standard sources (e.g. referral domains like g2, criteo) still go through
+      // Other non-standard sources (e.g. display networks like criteo) still go through
       // but must be flagged so the team knows to check GA4 channel grouping.
       if (!suggestion.ga4_setup_required) {
         suggestion.ga4_setup_required = true

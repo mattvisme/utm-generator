@@ -40,7 +40,7 @@ Create a Notion database named **"UTM Links — Visme"** with these properties:
 | GA4 Setup Required | Checkbox |
 | GA4 Setup Notes | Text |
 | Created | Date |
-| Created By | Text |
+| Created by | Person |
 
 Then share the database with your Notion integration and copy the database ID from the URL.
 

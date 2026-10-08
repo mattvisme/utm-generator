@@ -31,6 +31,7 @@ export interface GenerateRequest {
   affiliate_name?: string  // e.g. "john_smith" → utm_source=affiliate_john_smith
   social_platform?: string // e.g. "linkedin" — forces utm_source for social channels
   email_platform?: string  // e.g. "hubspot" — forces utm_source for email channels
+  referral_site?: string   // e.g. "techradar" — forces utm_source for the Referral channel
   is_sequence?: boolean
 }
 
@@ -94,13 +95,14 @@ export interface FormData {
   custom_slug: string     // optional Rebrandly slug override
   social_platform: string // platform selected for social channels
   email_platform: string  // sending platform selected for email channels
-  is_sequence: boolean    // true when building an email sequence
+  referral_site: string   // referring site name (normalised) for the Referral channel
+  is_sequence: boolean   // true when building an email sequence
   sequence_steps: string[] // utm_content values per step e.g. ['invite_1', 'reminder_1']
 }
 
 export const CHANNELS = [
   '-- Select a channel --',
-  'Email / Newsletter',
+  'Email',
   'Organic Social',
   'Paid Social',
   'Paid Search (Google Ads)',
@@ -125,7 +127,7 @@ export const PPC_CHANNELS: Channel[] = [
 
 // Channels where managed/unmanaged cohort targeting is relevant
 export const COHORT_CHANNELS: Channel[] = [
-  'Email / Newsletter',
+  'Email',
   'Product Feature',
 ]
 

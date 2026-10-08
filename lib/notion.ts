@@ -59,9 +59,10 @@ export async function saveUTMRecord(data: SaveRequest): Promise<string> {
         rich_text: [{ text: { content: (data.reasoning || '').slice(0, 2000) } }],
       },
       Created: { date: { start: new Date().toISOString() } },
-      // Only set Created By when we have a valid Notion user ID — the column is
+      // Only set Created by when we have a valid Notion user ID — the column is
       // typed as PERSON and will reject a rich_text fallback with a 400 error.
-      ...(data.created_by_id ? { 'Created By': { people: [{ id: data.created_by_id }] } } : {}),
+      // Property names are case-sensitive: this must match the Notion column exactly.
+      ...(data.created_by_id ? { 'Created by': { people: [{ id: data.created_by_id }] } } : {}),
       ...(data.url_short ? { 'URL (Short)': { url: data.url_short } } : {}),
     },
   })
