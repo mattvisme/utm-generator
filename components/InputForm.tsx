@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { FormData, NotionUser, CHANNELS, PPC_CHANNELS, COHORT_CHANNELS, SHORTLINK_CHANNELS, SOCIAL_PLATFORMS, EMAIL_PLATFORMS, MONTHS, Channel } from '@/types/utm'
+import { FormData, NotionUser, CHANNELS, PPC_CHANNELS, COHORT_CHANNELS, SHORTLINK_CHANNELS, SOCIAL_PLATFORMS, EMAIL_PLATFORMS, MONTHS, Channel, DEFAULT_REFERRAL_SOURCE } from '@/types/utm'
 import { isVismeUrl, stripUtmParams, normalizeReferralSite } from '@/lib/utm-utils'
 import PPCWarning from './PPCWarning'
 import LoadingSpinner from './LoadingSpinner'
@@ -181,7 +181,7 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
   }
 
   const hasValidSteps = !isSequence || sequenceSteps.some(s => s.trim())
-  const isValid = url && channel && channel !== '-- Select a channel --' && description && createdById && !urlError && (!isAffiliate || affiliateName) && (!isSocial || socialPlatform) && (!isEmail || emailPlatform) && (!isReferral || referralSiteSource) && hasValidSteps
+  const isValid = url && channel && channel !== '-- Select a channel --' && description && createdById && !urlError && (!isAffiliate || affiliateName) && (!isSocial || socialPlatform) && (!isEmail || emailPlatform) && hasValidSteps
 
   const fieldLabel = (text: string, optional = false) => (
     <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.375rem' }}>
@@ -415,25 +415,24 @@ export default function InputForm({ onSubmit, loading, initialData }: Props) {
         </div>
       )}
 
-      {/* Referring site — required for Referral */}
+      {/* Referring site — optional for Referral */}
       {isReferral && (
         <div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.375rem' }}>
-            <label className="label" style={{ margin: 0 }} htmlFor="referral_site">Referring Site</label>
-            <span style={{ color: '#DC2626' }}>*</span>
-          </div>
+          {fieldLabel('Referring Site', true)}
           <input
             id="referral_site"
             type="text"
             className="input-field"
-            placeholder="e.g. techradar.com"
+            placeholder="e.g. techradar.com — leave blank for a shared backlink link"
             value={referralSite}
             onChange={(e) => setReferralSite(e.target.value)}
             disabled={loading}
-            required
           />
           <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem', marginTop: '0.375rem', fontFamily: 'Lato, sans-serif' }}>
-            The site where this link will be placed. Sets <code style={{ background: '#f0f0f0', padding: '1px 4px', borderRadius: '3px' }}>utm_source={referralSiteSource || 'site_name'}</code>
+            Sets <code style={{ background: '#f0f0f0', padding: '1px 4px', borderRadius: '3px' }}>utm_source={referralSiteSource || DEFAULT_REFERRAL_SOURCE}</code>
+            {referralSiteSource
+              ? ' — traffic can be compared by site.'
+              : ' — one link for all backlinks; traffic is not split by site.'}
           </p>
         </div>
       )}

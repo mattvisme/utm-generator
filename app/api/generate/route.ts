@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { generateUTMs } from '@/lib/claude'
 import { findSimilarRecord } from '@/lib/notion'
 import { isVismeUrl, stripUtmParams, buildFinalUrl, truncateCampaign, normalizeReferralSite, MAX_CAMPAIGN_LENGTH } from '@/lib/utm-utils'
-import { GenerateRequest, APPROVED_MEDIUMS, APPROVED_SOURCES, INTERIM_AI_AD_MEDIUMS } from '@/types/utm'
+import { GenerateRequest, APPROVED_MEDIUMS, APPROVED_SOURCES, INTERIM_AI_AD_MEDIUMS, DEFAULT_REFERRAL_SOURCE } from '@/types/utm'
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,10 +17,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'URL must be a visme.co domain' }, { status: 400 })
     }
 
-    const referralSite = referral_site ? normalizeReferralSite(referral_site) : ''
-    if (channel === 'Referral' && !referralSite) {
-      return NextResponse.json({ error: 'Referring site is required for the Referral channel' }, { status: 400 })
-    }
+    // Referral with no site → shared backlink source; other channels ignore referral_site
+    const referralSite =
+      channel === 'Referral'
+        ? normalizeReferralSite(referral_site || '') || DEFAULT_REFERRAL_SOURCE
+        : ''
 
     const { base: cleanUrl } = stripUtmParams(url)
 

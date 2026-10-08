@@ -7,7 +7,7 @@ VISME CONTEXT:
 Visme helps users create presentations, infographics, reports, charts, and branded content. Customers include marketers, designers, educators, and enterprise teams. Key conversion goals are free trial signups and paid plan upgrades.
 
 APPROVED utm_source VALUES:
-google, bing, yandex, hubspot, instantly, mixmax, visme_admin, website, linkedin, facebook, instagram, twitter, tiktok, youtube, exported_pdf, visme_app, blog, affiliate_[partner_name], chatgpt
+google, bing, yandex, hubspot, instantly, mixmax, visme_admin, website, linkedin, facebook, instagram, twitter, tiktok, youtube, exported_pdf, visme_app, blog, backlink, affiliate_[partner_name], chatgpt
 For affiliate, replace [partner_name] with the specific partner name in lowercase (e.g. affiliate_buffer, affiliate_zapier).
 For any other source not in this list, use the closest lowercase equivalent and set ga4_setup_required=true.
 
@@ -77,7 +77,7 @@ Never use medium=newsletter. GA4's Email channel rule only recognises "email", "
 - Product badge/watermark on exported PDF: source=exported_pdf, medium=badge, ga4_setup_required=true
 - Affiliate/Partner: source=affiliate_[partner], medium=affiliate
 - Display: source=the ad network name in lowercase (e.g. google, criteo, adroll), medium=display. If the source is not google, bing, or yandex, set ga4_setup_required=true with reason "Non-standard display network source — confirm GA4 channel grouping."
-- Referral (link placed on a third-party site, review platform, or directory — not a paid affiliate): source=the referring site name in lowercase without TLD (e.g. g2, capterra, techradar, hubspot), medium=referral. ga4_setup_required=false (referral is a GA4 default channel).
+- Referral (link placed on a third-party site, review platform, or directory — not a paid affiliate): source=the referring site name in lowercase without TLD (e.g. g2, capterra, techradar, hubspot), medium=referral. ga4_setup_required=false (referral is a GA4 default channel). The tool supplies the source: the referring site's name, or "backlink" for a shared link used across all backlink placements.
 - Product Feature (in-app link or in-product prompt): source=visme_app, medium=internal. Set ga4_setup_required=true with reason "utm_medium=internal requires a GA4 custom channel group."
 - Blog CTA (link within visme.co blog content): source=blog, medium=internal. Set ga4_setup_required=true with reason "utm_medium=internal requires a GA4 custom channel group."
 - Website CTA (link on visme.co marketing site pages — nav, hero, landing pages, pricing, etc. but not blog content): source=website, medium=internal. Set ga4_setup_required=true with reason "utm_medium=internal requires a GA4 custom channel group."
@@ -151,7 +151,7 @@ export async function generateUTMs(
       ? `Email sending platform selected by user: ${emailPlatform} — set utm_source to exactly "${emailPlatform}".`
       : null,
     referralSite
-      ? `Referring site selected by user: ${referralSite} — set utm_source to exactly "${referralSite}" and utm_medium to referral.`
+      ? `Referral source determined by the tool: ${referralSite} — set utm_source to exactly "${referralSite}" and utm_medium to referral.`
       : null,
     isSequence
       ? 'This is an email sequence. Leave utm_content as null — it will be set individually per sequence step.'

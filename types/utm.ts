@@ -154,6 +154,9 @@ export const INTERIM_AI_AD_MEDIUMS = ['paid_ai'] as const
 // Expand this list if OpenAI introduces distinct named placements.
 export const OPENAI_AD_SOURCES = ['chatgpt'] as const
 
+// Referral utm_source when no referring site is given — one shared source for all backlink campaign links.
+export const DEFAULT_REFERRAL_SOURCE = 'backlink'
+
 export type ApprovedMedium = (typeof APPROVED_MEDIUMS)[number]
 
 // Approved utm_source base values. affiliate_[partner] is also valid (checked by regex).
@@ -176,6 +179,7 @@ export const APPROVED_SOURCES = [
   'exported_pdf',
   'visme_app',
   'blog',
+  DEFAULT_REFERRAL_SOURCE,
   'pinterest',
   'threads',
   'reddit',
